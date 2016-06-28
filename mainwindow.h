@@ -43,7 +43,7 @@ private slots:
     void r_end();
 
 signals:
-    void s_angles(double*);
+    void s_angles(float*);
 
 
 protected:

@@ -90,10 +90,10 @@ QString MainWindow::makedir()
     {
         mkdirsuccess=dir->mkdir(tfolder+"//color");
     }
-    if (!dir->exists(tfolder+"//depth"))
-    {
-        mkdirsuccess=dir->mkdir(tfolder+"//depth");
-    }
+//    if (!dir->exists(tfolder+"//depth"))
+//    {
+//        mkdirsuccess=dir->mkdir(tfolder+"//depth");
+//    }
     if (!dir->exists(tfolder+"//skeleton"))
     {
         mkdirsuccess=dir->mkdir(tfolder+"//skeleton");
@@ -123,7 +123,6 @@ void MainWindow::Kinectrun(QByteArray ba)
 //                t.start();
 //                while(t.elapsed()<30)
 //                QCoreApplication::processEvents();
-
                 if(myKinect.readok==true)
                 {
                     rgbimg=mat2qimage(myKinect.colorImg);
@@ -297,7 +296,7 @@ void MainWindow::on_seeangle_clicked()
     w2->setGeometry(x()+100,y()+100,1151,350);
     w2->setFixedWidth(1151);
     w2->setFixedHeight(350);
-    connect(this,SIGNAL(s_angles(double*)),w2,SLOT(r_angles(double*)));
+    connect(this,SIGNAL(s_angles(float*)),w2,SLOT(r_angles(float*)));
     connect(w2,SIGNAL(s_end()),this,SLOT(r_end()));
     flagLock1.lock();
     seeangleflag=true;

@@ -1,9 +1,12 @@
 #pragma once
 #include <Kinect.h>
 #include <opencv2\opencv.hpp>
+#include <bodyangle.h>
 #include "QtConcurrent/QtConcurrent"
 #include "cstring"
 #include "QMutex"
+#include "bodyangle.h"
+#include "fstream"
 
 
 // Safe release for interfaces
@@ -36,10 +39,13 @@ public:
     cv::Mat skeletonImg;
     cv::Mat depthImg;
     cv::Mat colorImg;
-    double rec_angle_and_dis[22];
+    float rec_angle_and_dis[22];
+    bodyangle recjoint;
     QMutex visitimg;
     QMutex skeletonImglock;
     bool readok;
+    std::ofstream rwsave;
+    std::ifstream rwload;
 
 private:
 	int frames;
@@ -57,11 +63,7 @@ private:
 	 IColorFrameReader*      m_pColorFrameReader;
 
 	  RGBQUAD*                m_pColorRGBX;
-    double calc_angle(const Joint* pJoints, JointType joint0, JointType joint1, JointType joint2);
-    double calc_angle4(const Joint* pJoints, JointType joint0, JointType joint1, JointType joint2, JointType joint3);
-    double calc_angle_vertical(const Joint* pJoints, JointType joint0, JointType joint1);
-    double calc_dis(const Joint* pJoints, JointType joint0, JointType joint1);
-	void show_angle(const Joint* pJoints);
+
 
 	//通过获得到的信息，把骨架和背景二值图画出来
 	void                    ProcessBody(int frames, int nBodyCount, IBody** ppBodies);
