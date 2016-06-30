@@ -39,14 +39,14 @@ SOURCES += main.cpp\
     myKinect.cpp \
     fillinfo.cpp \
     mylistitem.cpp \
-    anglemanager.cpp
+    anglemanager.cpp \
     bodyangle.cpp
 
 HEADERS  += mainwindow.h \
     myKinect.h \
     fillinfo.h \
     mylistitem.h \
-    anglemanager.h
+    anglemanager.h \
     bodyangle.h
 
 FORMS    += mainwindow.ui \
