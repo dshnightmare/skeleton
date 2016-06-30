@@ -2,10 +2,13 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "QString"
+#include <QMessageBox>
+#include <map>
+#include <QString>
 #include "myKinect.h"
 #include "fillinfo.h"
-#include "seeangle.h"
+#include "mylistitem.h"
+#include "anglemanager.h"
 #include "QRController.h"
 
 enum taketype{Kinect_take=0,Kinect_pause=1,Kinect_exit=2};
@@ -26,6 +29,8 @@ public:
     void Kinectrun(QByteArray ba);
     QString showangle[22];
     QString saveangle[22];
+private:
+    QString fromCategoryToName(int i, int j, int k);
 
 private slots:
     void on_start_clicked();
@@ -38,9 +43,17 @@ private slots:
 
     void on_fillinfo_clicked();
 
-    void on_seeangle_clicked();
+    //void on_seeangle_clicked();
 
     void r_end();
+
+    void on_select_position_currentIndexChanged(int index);
+
+    void on_add_angle_clicked();
+
+    void delete_list_item(QListWidgetItem *item);
+
+    void r_stable_angle(QString name, int angle);
 
 signals:
     void s_angles(double*);
@@ -53,7 +66,9 @@ private:
     taketype takeflag;
     bool seeangleflag;
     fillinfo* w1;
-    seeangle* w2;
+    map<QString, QListWidgetItem*> curListAngle;
+    map<QListWidgetItem*, std::tuple<int, int, int>> itemCategory;
+    AngleManager* anglemanager;
 };
 
 #endif // MAINWINDOW_H

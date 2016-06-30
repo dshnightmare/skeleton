@@ -34,15 +34,18 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     myKinect.cpp \
     fillinfo.cpp \
-    seeangle.cpp
+    mylistitem.cpp \
+    anglemanager.cpp
 
 HEADERS  += mainwindow.h \
     myKinect.h \
     fillinfo.h \
-    seeangle.h
+    mylistitem.h \
+    anglemanager.h
 
 FORMS    += mainwindow.ui \
             fillinfo.ui \
-            seeangle.ui
+            seeangle.ui \
+    mylistitem.ui
 
 include(QRCode/QRCode.pri)
