@@ -109,7 +109,7 @@ void seeangle::on_cancel_button_clicked()
     this->close();
 }
 
-void seeangle::r_angles(double *angles)
+void seeangle::r_angles(float *angles)
 {
     for (int i=0;i<22;i++)
     {
@@ -122,7 +122,7 @@ void seeangle::r_angles(double *angles)
 }
 
 
-void seeangle::refresh_one_angle(double *angles, int ptr)
+void seeangle::refresh_one_angle(float *angles, int ptr)
 {
     double temp = boxset[ptr]->text().toDouble();
     if (temp < angles[ptr]) boxset[ptr]->setText(QString::number(angles[ptr],'f',1));
@@ -144,7 +144,7 @@ void seeangle::refresh_one_angle(double *angles, int ptr)
 
 }
 
-void seeangle::refresh_angle(double *angles)
+void seeangle::refresh_angle(float *angles)
 {
 
     Time_cycle++;

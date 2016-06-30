@@ -32,13 +32,13 @@ private slots:
 
     void on_cancel_button_clicked();
 
-    void r_angles(double *angles);
+    void r_angles(float *angles);
 
 private:
     Ui::seeangle *ui;
-    void refresh_angle(double* angles);
+    void refresh_angle(float *angles);
 
-    void refresh_one_angle(double *angles, int ptr);
+    void refresh_one_angle(float *angles, int ptr);
 };
 
 #endif // SEEANGLE_H

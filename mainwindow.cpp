@@ -99,10 +99,10 @@ QString MainWindow::makedir()
     {
         mkdirsuccess=dir->mkdir(tfolder+"//color");
     }
-    if (!dir->exists(tfolder+"//depth"))
-    {
-        mkdirsuccess=dir->mkdir(tfolder+"//depth");
-    }
+//    if (!dir->exists(tfolder+"//depth"))
+//    {
+//        mkdirsuccess=dir->mkdir(tfolder+"//depth");
+//    }
     if (!dir->exists(tfolder+"//skeleton"))
     {
         mkdirsuccess=dir->mkdir(tfolder+"//skeleton");
@@ -132,7 +132,6 @@ void MainWindow::Kinectrun(QByteArray ba)
 //                t.start();
 //                while(t.elapsed()<30)
 //                QCoreApplication::processEvents();
-
                 if(myKinect.readok==true)
                 {
                     rgbimg=mat2qimage(myKinect.colorImg);
@@ -308,6 +307,24 @@ void MainWindow::on_fillinfo_clicked()
 //    flagLock1.unlock();
 //    w2->show();
 //}
+void MainWindow::on_seeangle_clicked()
+{
+    if (w2==NULL)
+    {
+        w2=new seeangle;
+    }
+    w2->setWindowTitle(QString::fromLocal8Bit("查看角度"));
+    w2->setWindowFlags(Qt::WindowCloseButtonHint);
+    w2->setGeometry(x()+100,y()+100,1151,350);
+    w2->setFixedWidth(1151);
+    w2->setFixedHeight(350);
+    connect(this,SIGNAL(s_angles(float*)),w2,SLOT(r_angles(float*)));
+    connect(w2,SIGNAL(s_end()),this,SLOT(r_end()));
+    flagLock1.lock();
+    seeangleflag=true;
+    flagLock1.unlock();
+    w2->show();
+}
 
 void MainWindow::r_end()
 {

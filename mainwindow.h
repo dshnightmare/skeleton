@@ -56,7 +56,7 @@ private slots:
     void r_stable_angle(QString name, int angle);
 
 signals:
-    void s_angles(double*);
+    void s_angles(float*);
 
 
 protected:
