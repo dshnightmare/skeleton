@@ -7,6 +7,7 @@
 #include "QtConcurrent/QtConcurrent"
 #include "QMutex"
 #include "QTextCodec"
+#include "mylistitem.h"
 
 static QMutex flagLock;
 static QMutex flagLock1;
@@ -17,11 +18,19 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     w1=NULL;
-    w2=NULL;
     takeflag=Kinect_exit;
     seeangleflag=false;
     folder="data";
     ui->setupUi(this);
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
+    ui->select_side->addItem(QString::fromLocal8Bit("左"));
+    ui->select_side->addItem(QString::fromLocal8Bit("右"));
+    ui->select_side->setCurrentIndex(-1);
+    ui->select_position->addItem(QString::fromLocal8Bit("膝"));
+    ui->select_position->addItem(QString::fromLocal8Bit("踝"));
+    ui->select_position->addItem(QString::fromLocal8Bit("髋"));
+    ui->select_position->setCurrentIndex(-1);
+    anglemanager = new AngleManager(ui->qwtPlot);
 }
 
 MainWindow::~MainWindow()
@@ -132,12 +141,13 @@ void MainWindow::Kinectrun(QByteArray ba)
                     ui->rgb->setPixmap(QPixmap::fromImage(rgbimg.scaled(ui->rgb->width(),ui->rgb->height(),Qt::KeepAspectRatio)));
                     ui->rgb->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
 
-                    flagLock1.lock();
-                    if (seeangleflag==true)
-                   {
-                        emit s_angles(myKinect.rec_angle_and_dis);
-                    }
-                    flagLock1.unlock();
+//                    flagLock1.lock();
+//                    if (seeangleflag==true)
+//                    {
+//                        emit s_angles(myKinect.rec_angle_and_dis);
+//                    }
+//                    flagLock1.unlock();
+                    emit s_angles(myKinect.rec_angle_and_dis);
                 }
 
             }
@@ -179,11 +189,6 @@ void MainWindow::closeEvent(QCloseEvent *e)
         w1->close();
         delete w1;
     }
-    if (w2!=NULL)
-    {
-        w2->close();
-        delete w2;
-    }
 
     while(t.elapsed()<1000)
     QCoreApplication::processEvents();
@@ -203,6 +208,12 @@ void MainWindow::on_start_clicked()
     flagLock.unlock();
     QString inputfolder=makedir();
     QByteArray ba = inputfolder.toLatin1();
+    anglemanager->clear();
+    for(int i = 0; i < ui->selected_angles->count(); i++){
+        ((MyListItem *)ui->selected_angles->itemWidget(ui->selected_angles->item(i)))->setAngle(0);
+    }
+    connect(this,SIGNAL(s_angles(double*)),anglemanager,SLOT(r_angles(double*)));
+    connect(anglemanager,SIGNAL(s_stable_angle(QString, int)), this, SLOT(r_stable_angle(QString,int)));
     QtConcurrent::run(this,&MainWindow::Kinectrun,ba);
 }
 
@@ -233,28 +244,21 @@ void MainWindow::on_stop_clicked()
     flagLock.unlock();
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
     ui->pause->setText(QString::fromLocal8Bit("暂停"));
+    disconnect(this,SIGNAL(s_angles(double*)),anglemanager,SLOT(r_angles(double*)));
+    disconnect(anglemanager,SIGNAL(s_stable_angle(QString, int)), this, SLOT(r_stable_angle(QString,int)));
     delete w1;
-    delete w2;
     w1=NULL;
-    w2=NULL;
 }
 
 void MainWindow::on_Qrcode_clicked()
 {
-    if (w1==NULL||w2==NULL) return;
+    if (w1==NULL) return;
     QString parsestr;
     parsestr=w1->name+'$'+w1->gender+'$'+w1->age+'$'+w1->height+'$'+w1->weight+'$'+w1->medicaltype
             +'$'+w1->diagonasis+'$'+w1->kneediagnosis+'$'+w1->hipdiagnosis+'$'+w1->otherdiagnosis+'$'
             +w1->side+'$'+w1->year+'$'+w1->month+'$'+w1->day;
-    for (int i=0;i<22;i++)
-    {
-        parsestr=parsestr+'$';
-        if (!w2->saveangle[i].isEmpty())
-        {
-            parsestr=parsestr+'$'+w2->saveangle[i];
-        }
+    //Todo: angles information
 
-    }
     std::string tstr=parsestr.toStdString();
     QByteArray tempstring = parsestr.toLocal8Bit();
     std::string tt=tempstring.data();
@@ -285,6 +289,24 @@ void MainWindow::on_fillinfo_clicked()
     w1->show();
 }
 
+//void MainWindow::on_seeangle_clicked()
+//{
+//    if (w2==NULL)
+//    {
+//        w2=new seeangle;
+//    }
+//    w2->setWindowTitle(QString::fromLocal8Bit("查看角度"));
+//    w2->setWindowFlags(Qt::WindowCloseButtonHint);
+//    w2->setGeometry(x()+100,y()+100,1151,350);
+//    w2->setFixedWidth(1151);
+//    w2->setFixedHeight(350);
+//    connect(this,SIGNAL(s_angles(double*)),w2,SLOT(r_angles(double*)));
+//    connect(w2,SIGNAL(s_end()),this,SLOT(r_end()));
+//    flagLock1.lock();
+//    seeangleflag=true;
+//    flagLock1.unlock();
+//    w2->show();
+//}
 void MainWindow::on_seeangle_clicked()
 {
     if (w2==NULL)
@@ -309,4 +331,113 @@ void MainWindow::r_end()
     flagLock1.lock();
     seeangleflag=false;
     flagLock1.unlock();
+}
+
+void MainWindow::on_select_position_currentIndexChanged(int index)
+{
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
+    ui->select_action->clear();
+    if (index == 0){
+        ui->select_action->addItem(QString::fromLocal8Bit("屈曲"));
+        ui->select_action->addItem(QString::fromLocal8Bit("伸直"));
+        ui->select_action->addItem(QString::fromLocal8Bit("股胫角"));
+        ui->select_action->addItem(QString::fromLocal8Bit("间距"));
+
+    }
+    else if (index == 1){
+        ui->select_action->addItem(QString::fromLocal8Bit("间距"));
+    }
+    else if (index == 2){
+        ui->select_action->addItem(QString::fromLocal8Bit("屈曲"));
+        ui->select_action->addItem(QString::fromLocal8Bit("伸直"));
+        ui->select_action->addItem(QString::fromLocal8Bit("外展"));
+        ui->select_action->addItem(QString::fromLocal8Bit("内收"));
+        ui->select_action->addItem(QString::fromLocal8Bit("内旋"));
+        ui->select_action->addItem(QString::fromLocal8Bit("外旋"));
+    }
+    ui->select_action->setCurrentIndex(-1);
+}
+
+void MainWindow::on_add_angle_clicked()
+{
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
+    if(ui->select_side->currentIndex() == -1 || ui->select_position->currentIndex() == -1 || ui->select_action->currentIndex() == -1){
+        QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("请确认要测量的角度"));
+        return;
+    }
+    QString name = fromCategoryToName(ui->select_side->currentIndex(), ui->select_position->currentIndex(), ui->select_action->currentIndex());
+    if(curListAngle.find(name) != curListAngle.end()){
+        QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("该角度已经添加"));
+        return;
+    }
+    QListWidgetItem *item = new QListWidgetItem();
+    curListAngle[name] = item;
+    itemCategory[item] = std::make_tuple(ui->select_side->currentIndex(), ui->select_position->currentIndex(), ui->select_action->currentIndex());
+    ui->selected_angles->addItem(item);
+
+    MyListItem *myItem = new MyListItem(ui->selected_angles, Qt::Window);
+    myItem->initItem(name, ui->selected_angles, item);
+    connect(myItem, SIGNAL(deleteListItem(QListWidgetItem*)), this, SLOT(delete_list_item(QListWidgetItem*)));
+    //myItem->show();
+    ui->selected_angles->setItemWidget(item, myItem);
+
+    item->setSizeHint(QSize(myItem->rect().width(), myItem->rect().height()));
+
+    anglemanager->setcheck(ui->select_side->currentIndex(), ui->select_position->currentIndex(), ui->select_action->currentIndex(), true);
+}
+
+void MainWindow::delete_list_item(QListWidgetItem *item){
+    //std::cout << ((MyListItem *)ui->selected_angles->itemWidget(item))->getName().toStdString() << endl;
+    curListAngle.erase(((MyListItem *)ui->selected_angles->itemWidget(item))->getName());
+    anglemanager->setcheck(std::get<0>(itemCategory[item]), std::get<1>(itemCategory[item]), std::get<2>(itemCategory[item]), false);
+    itemCategory.erase(item);
+    ui->selected_angles->removeItemWidget(item);
+    ui->selected_angles->takeItem(ui->selected_angles->row(item));
+    if (item != NULL)
+        delete item;
+}
+
+QString MainWindow::fromCategoryToName(int i, int j, int k){
+    QString name;
+    QTextStream &qin = QTextStream(&name);
+    if (i == 0)
+        qin << QString::fromLocal8Bit("左");
+    else if (i == 1)
+        qin << QString::fromLocal8Bit("右");
+    if(j == 0){
+        qin << QString::fromLocal8Bit("膝");
+        if (k == 0)
+            qin << QString::fromLocal8Bit("屈曲");
+        else if (k == 1)
+            qin << QString::fromLocal8Bit("伸直");
+        else if (k == 2)
+            qin << QString::fromLocal8Bit("股胫角");
+        else if (k == 3)
+            qin << QString::fromLocal8Bit("间距");
+    }
+    else if (j == 1){
+        qin << QString::fromLocal8Bit("踝");
+        if (k == 0)
+            qin << QString::fromLocal8Bit("间距");
+    }
+    else if (j == 2){
+        qin << QString::fromLocal8Bit("髋");
+        if (k == 0)
+            qin << QString::fromLocal8Bit("屈曲");
+        else if (k == 1)
+            qin << QString::fromLocal8Bit("伸直");
+        else if (k == 2)
+            qin << QString::fromLocal8Bit("外展");
+        else if (k == 3)
+            qin << QString::fromLocal8Bit("内收");
+        else if (k == 4)
+            qin << QString::fromLocal8Bit("内旋");
+        else if (k == 5)
+            qin << QString::fromLocal8Bit("外旋");
+    }
+    return name;
+}
+
+void MainWindow::r_stable_angle(QString name, int angle){
+    ((MyListItem *)ui->selected_angles->itemWidget(curListAngle[name]))->setAngle(angle);
 }
