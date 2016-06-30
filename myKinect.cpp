@@ -319,7 +319,7 @@ void CBodyBasics::ProcessBody(int frames, int nBodyCount, IBody** ppBodies)
         }
     }
     if (ptr!=-1)
-    {
+    {qDebug("s\n");
         IBody* pBody = ppBodies[ptr];
         Joint joints[JointType_Count];
         hr = pBody->GetJoints(_countof(joints), joints);
@@ -330,26 +330,31 @@ void CBodyBasics::ProcessBody(int frames, int nBodyCount, IBody** ppBodies)
             //将关节点坐标从摄像机坐标系（-1~1）转到深度坐标系（424*512）
             m_pCoordinateMapper->MapCameraPointToDepthSpace(joints[j].Position, &depthSpacePosition[j]);
         }
+        recjoint.frame=frames;
         recjoint.update(depthSpacePosition,joints);
         recjoint.calcangles();
         {
             boost::archive::text_oarchive oa(rwsave);
             oa << recjoint;
         }
-
-
-        bodyangle temp;
-        {
-            boost::archive::text_iarchive ia(rwload);
-            ia >> temp;
-        }
-
-        skeletonImg=temp.draw();
-
+        skeletonImg=recjoint.draw();
         for (int i=0;i<22;i++)
         {
-            rec_angle_and_dis[i]=temp.angles[i];
+            rec_angle_and_dis[i]=recjoint.angles[i];
         }
+
+//        bodyangle temp;
+//        {
+//            boost::archive::text_iarchive ia(rwload);
+//            ia >> temp;
+//        }
+
+//        skeletonImg=temp.draw();
+
+//        for (int i=0;i<22;i++)
+//        {
+//            rec_angle_and_dis[i]=temp.angles[i];
+//        }
 
         delete[] depthSpacePosition;
 

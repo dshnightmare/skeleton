@@ -121,15 +121,32 @@ void bodyangle::calcangles()
         joint_coordinate_2d[i].X=tjoint_coordinate_2d.plot2d[i][0];
         joint_coordinate_2d[i].Y=tjoint_coordinate_2d.plot2d[i][1];
     }
-    //Ï¥¹Ø½Ú½Ç¶È£¬ÔÝÊ±Í³Ò»²ÉÓÃÍÎ¡¢Ï¥¡¢õ×Èý½Úµã¼Ð½Ç
-    angles[0] = calc_angle3(joint_coordinate_3d, JointType_HipLeft, JointType_KneeLeft, JointType_AnkleLeft);
-    angles[1] = calc_angle3(joint_coordinate_3d, JointType_HipRight, JointType_KneeRight, JointType_AnkleRight);
 
+    //Ï¥ÇüÇú
+    angles[0] = 180-calc_angle3(joint_coordinate_3d, JointType_HipLeft, JointType_KneeLeft, JointType_AnkleLeft);
+    angles[1] = 180-calc_angle3(joint_coordinate_3d, JointType_HipRight, JointType_KneeRight, JointType_AnkleRight);
+
+    //Ï¥ÉìÖ±
     angles[2] = angles[0];
     angles[3] = angles[1];
 
+    //Ï¥¹ÉëÖ½Ç
     angles[4] = angles[0];
     angles[5] = angles[1];
+
+    float tmax = joint_coordinate_3d[JointType_KneeLeft].Position.X>joint_coordinate_3d[JointType_KneeRight].Position.X?
+                    joint_coordinate_3d[JointType_KneeLeft].Position.X:joint_coordinate_3d[JointType_KneeRight].Position.X;
+    float tmin = joint_coordinate_3d[JointType_KneeLeft].Position.X+joint_coordinate_3d[JointType_KneeRight].Position.X - tmax;
+
+    if (!( ( joint_coordinate_3d[JointType_HipLeft].Position.X > tmin && joint_coordinate_3d[JointType_HipLeft].Position.X < tmax) &&
+           ( joint_coordinate_3d[JointType_AnkleLeft].Position.X > tmin && joint_coordinate_3d[JointType_AnkleLeft].Position.X < tmax ) &&
+           ( joint_coordinate_3d[JointType_HipRight].Position.X > tmin && joint_coordinate_3d[JointType_HipRight].Position.X < tmax) &&
+           ( joint_coordinate_3d[JointType_AnkleRight].Position.X > tmin && joint_coordinate_3d[JointType_AnkleRight].Position.X < tmax ) ))
+    {
+        angles[4] = -angles[4];
+        angles[5] = -angles[5];
+    }
+
 
     //Ï¥¼ä¾à
     angles[6] = calc_dis(joint_coordinate_3d, JointType_KneeRight, JointType_KneeLeft);
@@ -140,29 +157,154 @@ void bodyangle::calcangles()
     angles[9] = angles[8];
 
     //÷ÅÇüÇú
-    angles[10] = calc_angle4(joint_coordinate_3d, JointType_KneeLeft, JointType_HipLeft, JointType_SpineMid, JointType_SpineBase);
-    angles[11] = calc_angle4(joint_coordinate_3d, JointType_KneeRight, JointType_HipRight, JointType_SpineMid, JointType_SpineBase);
+    angles[10] = 180-calc_angle_vertical(joint_coordinate_3d, JointType_KneeLeft, JointType_HipLeft);
+    angles[11] = 180-calc_angle_vertical(joint_coordinate_3d, JointType_KneeRight, JointType_HipRight);
 
     //÷ÅÉìÖ±
-    angles[12] = calc_angle4(joint_coordinate_3d, JointType_SpineBase, JointType_SpineMid, JointType_HipLeft, JointType_KneeLeft);
-    angles[13] = calc_angle4(joint_coordinate_3d, JointType_SpineBase, JointType_SpineMid, JointType_HipRight, JointType_KneeRight);
+    angles[12] = -angles[10];
+    angles[13] = -angles[11];
 
     //÷ÅÍâÕ¹
     angles[14] = calc_angle_vertical(joint_coordinate_3d, JointType_HipLeft, JointType_KneeLeft);
     angles[15] = calc_angle_vertical(joint_coordinate_3d, JointType_HipRight, JointType_KneeRight);
 
     //÷ÅÄÚÊÕ
-    angles[16] = calc_angle4(joint_coordinate_3d, JointType_SpineBase, JointType_SpineMid, JointType_HipLeft, JointType_KneeLeft);
-    angles[17] = calc_angle4(joint_coordinate_3d, JointType_SpineBase, JointType_SpineMid, JointType_HipRight, JointType_KneeRight);
+    Joint planar1,planar2,planarn,plannardis,vec;
+    float tt;
+    {
+        planar1.Position.X=joint_coordinate_3d[JointType_SpineBase].Position.X-joint_coordinate_3d[JointType_HipRight].Position.X;
+        planar1.Position.Y=joint_coordinate_3d[JointType_SpineBase].Position.Y-joint_coordinate_3d[JointType_HipRight].Position.Y;
+        planar1.Position.Z=joint_coordinate_3d[JointType_SpineBase].Position.Z-joint_coordinate_3d[JointType_HipRight].Position.Z;
+        planar2.Position.X=joint_coordinate_3d[JointType_KneeRight].Position.X-joint_coordinate_3d[JointType_HipRight].Position.X;
+        planar2.Position.Y=joint_coordinate_3d[JointType_KneeRight].Position.Y-joint_coordinate_3d[JointType_HipRight].Position.Y;
+        planar2.Position.Z=joint_coordinate_3d[JointType_KneeRight].Position.Z-joint_coordinate_3d[JointType_HipRight].Position.Z;
+        vec.Position.X = joint_coordinate_3d[JointType_HipLeft].Position.X-joint_coordinate_3d[JointType_KneeLeft].Position.X;
+        vec.Position.Y = joint_coordinate_3d[JointType_HipLeft].Position.Y-joint_coordinate_3d[JointType_KneeLeft].Position.Y;
+        vec.Position.Z = joint_coordinate_3d[JointType_HipLeft].Position.Z-joint_coordinate_3d[JointType_KneeLeft].Position.Z;
+
+
+        planarn.Position.X=planar1.Position.Y*planar2.Position.Z-planar1.Position.Z*planar2.Position.Y;
+        planarn.Position.Y=planar1.Position.Z*planar2.Position.X-planar1.Position.X*planar2.Position.Z;
+        planarn.Position.Z=planar1.Position.X*planar2.Position.Y-planar1.Position.Y*planar2.Position.X;
+
+        tt = pow( pow(planarn.Position.X,2.0) +  pow(planarn.Position.Y,2.0) + pow(planarn.Position.Z,2.0) ,float(1/3));
+        planarn.Position.X/=tt;planarn.Position.Y/=tt;planarn.Position.Z/=tt;
+
+        tt = planarn.Position.X*vec.Position.X+planarn.Position.Y*vec.Position.Y+planarn.Position.Z*vec.Position.Z;
+        plannardis.Position.X=planarn.Position.X*tt;plannardis.Position.Y=planarn.Position.Y*tt;plannardis.Position.Z=planarn.Position.Z*tt;
+
+        vec.TrackingState=TrackingState_NotTracked;
+        plannardis.TrackingState=TrackingState_NotTracked;
+        if ( (joint_coordinate_3d[JointType_SpineBase].TrackingState!=TrackingState_NotTracked) &&
+              (joint_coordinate_3d[JointType_HipRight].TrackingState!=TrackingState_NotTracked) &&
+              (joint_coordinate_3d[JointType_KneeRight].TrackingState!=TrackingState_NotTracked))
+        {
+             plannardis.TrackingState=TrackingState_Tracked;
+        }
+        if ( (joint_coordinate_3d[JointType_HipLeft].TrackingState!=TrackingState_NotTracked) &&
+              (joint_coordinate_3d[JointType_KneeLeft].TrackingState!=TrackingState_NotTracked))
+        {
+             vec.TrackingState=TrackingState_Tracked;
+        }
+
+
+        angles[16] = calc_angle_verticalt(vec, plannardis);
+    }
+
+    {
+        planar1.Position.X=joint_coordinate_3d[JointType_SpineBase].Position.X-joint_coordinate_3d[JointType_HipLeft].Position.X;
+        planar1.Position.Y=joint_coordinate_3d[JointType_SpineBase].Position.Y-joint_coordinate_3d[JointType_HipLeft].Position.Y;
+        planar1.Position.Z=joint_coordinate_3d[JointType_SpineBase].Position.Z-joint_coordinate_3d[JointType_HipLeft].Position.Z;
+        planar2.Position.X=joint_coordinate_3d[JointType_KneeLeft].Position.X-joint_coordinate_3d[JointType_HipLeft].Position.X;
+        planar2.Position.Y=joint_coordinate_3d[JointType_KneeLeft].Position.Y-joint_coordinate_3d[JointType_HipLeft].Position.Y;
+        planar2.Position.Z=joint_coordinate_3d[JointType_KneeLeft].Position.Z-joint_coordinate_3d[JointType_HipLeft].Position.Z;
+        vec.Position.X = joint_coordinate_3d[JointType_HipRight].Position.X-joint_coordinate_3d[JointType_KneeRight].Position.X;
+        vec.Position.Y = joint_coordinate_3d[JointType_HipRight].Position.Y-joint_coordinate_3d[JointType_KneeRight].Position.Y;
+        vec.Position.Z = joint_coordinate_3d[JointType_HipRight].Position.Z-joint_coordinate_3d[JointType_KneeRight].Position.Z;
+
+
+        planarn.Position.X=planar1.Position.Y*planar2.Position.Z-planar1.Position.Z*planar2.Position.Y;
+        planarn.Position.Y=planar1.Position.Z*planar2.Position.X-planar1.Position.X*planar2.Position.Z;
+        planarn.Position.Z=planar1.Position.X*planar2.Position.Y-planar1.Position.Y*planar2.Position.X;
+
+        tt = pow( pow(planarn.Position.X,2.0) +  pow(planarn.Position.Y,2.0) + pow(planarn.Position.Z,2.0) ,float(1/3));
+        planarn.Position.X/=tt;planarn.Position.Y/=tt;planarn.Position.Z/=tt;
+
+        tt = planarn.Position.X*vec.Position.X+planarn.Position.Y*vec.Position.Y+planarn.Position.Z*vec.Position.Z;
+        plannardis.Position.X=planarn.Position.X*tt;plannardis.Position.Y=planarn.Position.Y*tt;plannardis.Position.Z=planarn.Position.Z*tt;
+
+        vec.TrackingState=TrackingState_NotTracked;
+        plannardis.TrackingState=TrackingState_NotTracked;
+        if ( (joint_coordinate_3d[JointType_SpineBase].TrackingState!=TrackingState_NotTracked) &&
+              (joint_coordinate_3d[JointType_HipLeft].TrackingState!=TrackingState_NotTracked) &&
+              (joint_coordinate_3d[JointType_KneeLeft].TrackingState!=TrackingState_NotTracked))
+        {
+             plannardis.TrackingState=TrackingState_Tracked;
+        }
+        if ( (joint_coordinate_3d[JointType_HipRight].TrackingState!=TrackingState_NotTracked) &&
+              (joint_coordinate_3d[JointType_KneeRight].TrackingState!=TrackingState_NotTracked))
+        {
+             vec.TrackingState=TrackingState_Tracked;
+        }
+
+
+        angles[17] = calc_angle_verticalt(vec, plannardis);
+    }
 
     //÷ÅÐý1
-    angles[18] = calc_angle_vertical(joint_coordinate_3d, JointType_KneeLeft, JointType_AnkleLeft);
-    angles[19] = calc_angle_vertical(joint_coordinate_3d, JointType_KneeRight, JointType_AnkleRight);
+
+    if ( (joint_coordinate_3d[JointType_AnkleLeft].Position.X-joint_coordinate_3d[JointType_KneeLeft].Position.X)
+         *(joint_coordinate_3d[JointType_KneeLeft].Position.X-joint_coordinate_3d[JointType_KneeRight].Position.X)>0)
+    {
+        angles[18] = calc_angle_vertical(joint_coordinate_3d, JointType_KneeLeft, JointType_AnkleLeft);
+    }
+    else
+    {
+        angles[18] = -calc_angle_vertical(joint_coordinate_3d, JointType_KneeLeft, JointType_AnkleLeft);
+    }
+
+    if ( (joint_coordinate_3d[JointType_AnkleRight].Position.X-joint_coordinate_3d[JointType_KneeRight].Position.X)
+         *(joint_coordinate_3d[JointType_KneeRight].Position.X-joint_coordinate_3d[JointType_KneeLeft].Position.X)>0)
+    {
+        angles[19] = calc_angle_vertical(joint_coordinate_3d, JointType_KneeRight, JointType_AnkleRight);
+    }
+    else
+    {
+        angles[19] = -calc_angle_vertical(joint_coordinate_3d, JointType_KneeRight, JointType_AnkleRight);
+    }
 
 
     //÷ÅÐý2
-    angles[20] = calc_angle_vertical(joint_coordinate_3d, JointType_AnkleLeft, JointType_KneeLeft);
-    angles[21] = calc_angle_vertical(joint_coordinate_3d, JointType_AnkleRight, JointType_KneeRight);
+    angles[20] = -angles[18];
+    angles[21] = -angles[19];
+
+}
+
+float bodyangle::calc_angle_verticalt(Joint joint0, Joint joint1)
+{
+    TrackingState joint0state = joint0.TrackingState;
+    TrackingState joint1state = joint1.TrackingState;
+    if ((joint0state != TrackingState_NotTracked) && (joint1state != TrackingState_NotTracked))
+    {
+        float v1x = joint0.Position.X - joint1.Position.X;
+        float v1y = joint0.Position.Y - joint1.Position.Y;
+        float v1z = joint0.Position.Z - joint1.Position.Z;
+        float v2x = 0;
+        float v2y = 1.0;
+        float v2z = 0;
+        float d1 = v1x*v2x + v1y*v2y + v1z*v2z;
+        float d2_1 = pow(v1x, 2) + pow(v1y, 2) + pow(v1z, 2);
+        float d2_2 = pow(v2x, 2) + pow(v2y, 2) + pow(v2z, 2);
+        float d2 = pow(d2_1, 0.5)*pow(d2_2, 0.5);
+
+        float theta = acos(d1 / d2) * 180 / 3.1415926;
+        if (theta<0.1) return 0;
+        return theta;
+    }
+    else
+    {
+        return 0;
+    }
 
 }
 
@@ -170,7 +312,7 @@ float bodyangle::calc_angle_vertical(const Joint* pJoints, JointType joint0, Joi
 {
     TrackingState joint0state = pJoints[joint0].TrackingState;
     TrackingState joint1state = pJoints[joint1].TrackingState;
-    if ((joint0state == TrackingState_Tracked) && (joint1state == TrackingState_Tracked))
+    if ((joint0state != TrackingState_NotTracked) && (joint1state != TrackingState_NotTracked))
     {
         float v1x = pJoints[joint0].Position.X - pJoints[joint1].Position.X;
         float v1y = pJoints[joint0].Position.Y - pJoints[joint1].Position.Y;
@@ -198,7 +340,7 @@ float bodyangle::calc_angle3(const Joint* pJoints, JointType joint0, JointType j
     TrackingState joint1state = pJoints[joint1].TrackingState;
     TrackingState joint2state = pJoints[joint2].TrackingState;
 
-    if ((joint0state == TrackingState_Tracked) && (joint1state == TrackingState_Tracked) && (joint2state == TrackingState_Tracked))
+    if ((joint0state != TrackingState_NotTracked) && (joint1state != TrackingState_NotTracked) && (joint2state != TrackingState_NotTracked))
     {
         float v1x = pJoints[joint0].Position.X - pJoints[joint1].Position.X;
         float v1y = pJoints[joint0].Position.Y - pJoints[joint1].Position.Y;
@@ -228,7 +370,7 @@ float bodyangle::calc_angle4(const Joint* pJoints, JointType joint0, JointType j
     TrackingState joint2state = pJoints[joint2].TrackingState;
     TrackingState joint3state = pJoints[joint3].TrackingState;
 
-    if ((joint0state == TrackingState_Tracked) && (joint1state == TrackingState_Tracked) && (joint2state == TrackingState_Tracked) && (joint3state == TrackingState_Tracked))
+    if ((joint0state != TrackingState_NotTracked) && (joint1state != TrackingState_NotTracked) && (joint2state != TrackingState_NotTracked) && (joint3state != TrackingState_NotTracked))
     {
         float v1x = pJoints[joint0].Position.X - pJoints[joint1].Position.X;
         float v1y = pJoints[joint0].Position.Y - pJoints[joint1].Position.Y;
@@ -255,7 +397,7 @@ float bodyangle::calc_dis(const Joint* pJoints, JointType joint0, JointType join
 {
     TrackingState joint0state = pJoints[joint0].TrackingState;
     TrackingState joint1state = pJoints[joint1].TrackingState;
-    if ((joint0state == TrackingState_Tracked) && (joint1state == TrackingState_Tracked))
+    if ((joint0state != TrackingState_NotTracked) && (joint1state != TrackingState_NotTracked))
     {
         float v1x = pJoints[joint0].Position.X - pJoints[joint1].Position.X;
         float v1y = pJoints[joint0].Position.Y - pJoints[joint1].Position.Y;

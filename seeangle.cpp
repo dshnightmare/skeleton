@@ -113,7 +113,7 @@ void seeangle::r_angles(float *angles)
 {
     for (int i=0;i<22;i++)
     {
-        if (angles[i]<0.0001 || angles[i] > 180) angles[i] = 0;
+        if (angles[i]< -180 || angles[i] > 180) angles[i] = 0;
     }
 
     refresh_angle(angles);
@@ -124,10 +124,12 @@ void seeangle::r_angles(float *angles)
 
 void seeangle::refresh_one_angle(float *angles, int ptr)
 {
-    double temp = boxset[ptr]->text().toDouble();
-    if (temp < angles[ptr]) boxset[ptr]->setText(QString::number(angles[ptr],'f',1));
+//    double temp = boxset[ptr]->text().toDouble();
+//    boxset[ptr]->setText(QString::number(angles[ptr],'f',1));
     if (Time_cycle == 0)
     {
+
+        boxset[ptr]->setText(QString::number(angles[ptr],'f',1));
         for (int i = 0; i<29; i++)
         {
             showangleplot[ptr][i] = showangleplot[ptr][i+1];

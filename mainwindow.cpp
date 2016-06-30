@@ -134,7 +134,7 @@ void MainWindow::Kinectrun(QByteArray ba)
 
                     flagLock1.lock();
                     if (seeangleflag==true)
-                    {
+                   {
                         emit s_angles(myKinect.rec_angle_and_dis);
                     }
                     flagLock1.unlock();

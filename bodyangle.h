@@ -6,6 +6,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <fstream>
+#include "qdebug.h"
 
 class jplot_2d{
 public:
@@ -34,6 +35,7 @@ class bodyangle
 {
     friend class boost::serialization::access;
 public:
+    int frame;
     static const int        cDepthWidth = 512;
     static const int        cDepthHeight = 424;
     bodyangle();
@@ -47,6 +49,7 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
+        ar & frame;
         ar & angles;
         ar & tjoint_coordinate_2d;
         ar & tjoint_coordinate_3d;
@@ -54,6 +57,7 @@ public:
 
 private:
     void DrawBone(const Joint* pJoints, const DepthSpacePoint* depthSpacePosition, JointType joint0, JointType joint1);
+    float calc_angle_verticalt(Joint joint0, Joint joint1);
     float calc_angle_vertical(const Joint* pJoints, JointType joint0, JointType joint1);
     float calc_angle3(const Joint* pJoints, JointType joint0, JointType joint1, JointType joint2);
     float calc_angle4(const Joint* pJoints, JointType joint0, JointType joint1, JointType joint2, JointType joint3);
