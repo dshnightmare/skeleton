@@ -46,27 +46,29 @@ void AngleManager::makepen()
 {
     //
     pens[0] = new QPen(QColor(255,0,0),2,Qt::SolidLine);
-    pens[1] = new QPen(QColor(255,0,0),2,Qt::DotLine);
+    pens[1] = new QPen(QColor(0,255,255),2,Qt::SolidLine);
     pens[2] = new QPen(QColor(0,255,0),2,Qt::SolidLine);
-    pens[3] = new QPen(QColor(0,255,0),2,Qt::DotLine);
+    pens[3] = new QPen(QColor(255,0,255),2,Qt::SolidLine);
     pens[4] = new QPen(QColor(0,0,255),2,Qt::SolidLine);
-    pens[5] = new QPen(QColor(0,0,255),2,Qt::DotLine);
-    pens[6] = new QPen(QColor(200,200,0),2,Qt::SolidLine);
-    pens[7] = new QPen(QColor(200,200,0),2,Qt::DotLine);
-    pens[8] = new QPen(QColor(255,0,255),2,Qt::SolidLine);
-    pens[9] = new QPen(QColor(255,0,255),2,Qt::DotLine);
-    pens[10] = new QPen(QColor(0,255,255),2,Qt::SolidLine);
+    pens[5] = new QPen(QColor(255,255,0),2,Qt::SolidLine);
+    pens[6] = new QPen(QColor(255,128,0),2,Qt::SolidLine);
+    pens[7] = new QPen(QColor(0,128,255),2,Qt::SolidLine);
+
+    pens[8] = new QPen(QColor(255,0,128),2,Qt::SolidLine);
+    pens[9] = new QPen(QColor(0,255,128),2,Qt::SolidLine);
+
+    pens[10] = new QPen(QColor(255,0,0),2,Qt::DotLine);
     pens[11] = new QPen(QColor(0,255,255),2,Qt::DotLine);
-    pens[12] = new QPen(QColor(0,0,0),2,Qt::SolidLine);
-    pens[13] = new QPen(QColor(0,0,0),2,Qt::DotLine);
-    pens[14] = new QPen(QColor(255,128,0),2,Qt::SolidLine);
-    pens[15] = new QPen(QColor(255,128,0),2,Qt::DotLine);
-    pens[16] = new QPen(QColor(0,128,255),2,Qt::SolidLine);
+    pens[12] = new QPen(QColor(0,255,0),2,Qt::DotLine);
+    pens[13] = new QPen(QColor(255,0,255),2,Qt::DotLine);
+    pens[14] = new QPen(QColor(0,0,255),2,Qt::DotLine);
+    pens[15] = new QPen(QColor(255,255,0),2,Qt::DotLine);
+    pens[16] = new QPen(QColor(255,128,0),2,Qt::DotLine);
     pens[17] = new QPen(QColor(0,128,255),2,Qt::DotLine);
-    pens[18] = new QPen(QColor(128,128,128),2,Qt::SolidLine);
-    pens[19] = new QPen(QColor(128,128,128),2,Qt::DotLine);
-    pens[20] = new QPen(QColor(239,143,189),2,Qt::SolidLine);
-    pens[21] = new QPen(QColor(239,143,189),2,Qt::DotLine);
+    pens[18] = new QPen(QColor(255,0,128),2,Qt::DotLine);
+    pens[19] = new QPen(QColor(0,255,128),2,Qt::DotLine);
+    pens[20] = new QPen(QColor(128,0,255),2,Qt::DotLine);
+    pens[21] = new QPen(QColor(128,255,0),2,Qt::DotLine);
 }
 
 int AngleManager::fromCategoryToIndex(int i, int j, int k){
@@ -129,7 +131,7 @@ void AngleManager::refresh_one_angle(int index, float value){
         curve->setPen(*pens[index]);
         curve->setSamples(xplot,showangleplot[index],30);
         curve->setLegendAttribute(QwtPlotCurve::LegendShowLine);
-        plot->insertLegend(new QwtLegend(),QwtPlot::RightLegend);
+        plot->insertLegend(new QwtLegend(),QwtPlot::RightLegend, 0.1);
         curve->attach(plot);
     }
 
