@@ -21,7 +21,7 @@ AngleManager::AngleManager(QwtPlot *p)
     canvas->setBorderRadius(10);
     plot->setCanvas(canvas);
     plot->setAxisScale(QwtPlot::xBottom, 0, 30);
-    plot->setAxisScale(QwtPlot::yLeft, 0, 200);
+    plot->setAxisScale(QwtPlot::yLeft, -100, 200);
 }
 AngleManager::~AngleManager(){
 
@@ -79,7 +79,7 @@ int AngleManager::fromCategoryToIndex(int i, int j, int k){
     return r;
 }
 
-void AngleManager::refresh_angle(double *angles){
+void AngleManager::refresh_angle(float *angles){
     Time_cycle++;
     Time_cycle %= 30;
 
@@ -104,7 +104,7 @@ void AngleManager::setcheck(int i, int j, int k, bool flag){
     }
 }
 
-void AngleManager::refresh_one_angle(int index, double value){
+void AngleManager::refresh_one_angle(int index, float value){
     values[index].push_back(value);
     if(values[index].size() > 30)
         values[index].pop_front();
@@ -135,11 +135,11 @@ void AngleManager::refresh_one_angle(int index, double value){
 
 }
 
-void AngleManager::r_angles(double *angles)
+void AngleManager::r_angles(float *angles)
 {
     for (int i=0;i<22;i++)
     {
-        if (angles[i]<0.0001 || angles[i] > 180) angles[i] = 0;
+        if (angles[i]<-180 || angles[i] > 180) angles[i] = 0;
     }
     refresh_angle(angles);
 }

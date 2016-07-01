@@ -313,7 +313,7 @@ void CBodyBasics::ProcessBody(int frames, int nBodyCount, IBody** ppBodies)
         }
     }
     if (ptr!=-1)
-    {qDebug("s\n");
+    {
         IBody* pBody = ppBodies[ptr];
         Joint joints[JointType_Count];
         hr = pBody->GetJoints(_countof(joints), joints);
