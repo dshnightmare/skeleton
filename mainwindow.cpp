@@ -1,6 +1,7 @@
 ﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "opencv2/opencv.hpp"
+#include "opencv2/highgui/highgui.hpp"
 #include "Kinect.h"
 #include "QDateTime"
 #include "QDir"
@@ -10,7 +11,6 @@
 #include "mylistitem.h"
 
 static QMutex flagLock;
-static QMutex flagLock1;
 static QMutex testlock;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -19,7 +19,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     w1=NULL;
     takeflag=Kinect_exit;
-    seeangleflag=false;
     folder="data";
     ui->setupUi(this);
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
@@ -214,6 +213,8 @@ void MainWindow::on_start_clicked()
     }
     connect(this,SIGNAL(s_angles(double*)),anglemanager,SLOT(r_angles(double*)));
     connect(anglemanager,SIGNAL(s_stable_angle(QString, int)), this, SLOT(r_stable_angle(QString,int)));
+    ui->video->setEnabled(false);
+    curfolder = ba.data();
     QtConcurrent::run(this,&MainWindow::Kinectrun,ba);
 }
 
@@ -246,6 +247,7 @@ void MainWindow::on_stop_clicked()
     ui->pause->setText(QString::fromLocal8Bit("暂停"));
     disconnect(this,SIGNAL(s_angles(double*)),anglemanager,SLOT(r_angles(double*)));
     disconnect(anglemanager,SIGNAL(s_stable_angle(QString, int)), this, SLOT(r_stable_angle(QString,int)));
+    ui->video->setEnabled(true);
     delete w1;
     w1=NULL;
 }
@@ -307,31 +309,6 @@ void MainWindow::on_fillinfo_clicked()
 //    flagLock1.unlock();
 //    w2->show();
 //}
-void MainWindow::on_seeangle_clicked()
-{
-    if (w2==NULL)
-    {
-        w2=new seeangle;
-    }
-    w2->setWindowTitle(QString::fromLocal8Bit("查看角度"));
-    w2->setWindowFlags(Qt::WindowCloseButtonHint);
-    w2->setGeometry(x()+100,y()+100,1151,350);
-    w2->setFixedWidth(1151);
-    w2->setFixedHeight(350);
-    connect(this,SIGNAL(s_angles(float*)),w2,SLOT(r_angles(float*)));
-    connect(w2,SIGNAL(s_end()),this,SLOT(r_end()));
-    flagLock1.lock();
-    seeangleflag=true;
-    flagLock1.unlock();
-    w2->show();
-}
-
-void MainWindow::r_end()
-{
-    flagLock1.lock();
-    seeangleflag=false;
-    flagLock1.unlock();
-}
 
 void MainWindow::on_select_position_currentIndexChanged(int index)
 {
@@ -440,4 +417,61 @@ QString MainWindow::fromCategoryToName(int i, int j, int k){
 
 void MainWindow::r_stable_angle(QString name, int angle){
     ((MyListItem *)ui->selected_angles->itemWidget(curListAngle[name]))->setAngle(angle);
+}
+
+void MainWindow::on_video_clicked()
+{
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
+    //检查路径
+    if(curfolder.isNull()){
+        QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("无数据，请点击开始按钮开始检测"));
+        return;
+    }
+    //读入数据
+    char s[1000];
+    sprintf(s, "%s\\skeleton\\save", curfolder);
+    ifstream load;
+    if(!load){
+        curfolder = QString::null;
+        QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("读入数据失败，请重新检测"));
+        load.close();
+        return;
+    }
+    boost::archive::text_iarchive ia(load);
+    vector<bodyangle> alldata;
+    bodyangle tmp;
+    while(!load.eof()){
+        ia >> tmp;
+        alldata.emplace_back(tmp);
+    }
+    if(alldata.size() == 0){
+        curfolder = QString::null;
+        QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("数据为空，无法生成视频"));
+        load.close();
+        return;
+    }
+    //显式进度条
+    QProgressDialog process(this);
+    process.setWindowTitle(QString::fromLocal8Bit("提示"));
+    process.setLabelText(QString::fromLocal8Bit("处理中"));
+    process.setRange(0, alldata.size());
+    process.setModal(true);
+    process.setCancelButtonText(QString::fromLocal8Bit("取消"));
+
+    //生成视频并更新进度条
+    int fourcc = CV_FOURCC('M', 'J', 'P', 'G');
+    double fps = 30;
+    bool iscolor = true;
+    cv::Mat frame;
+    cv::VideoWriter Writer = cv::VideoWriter(curfolder.toStdString() + "\\video.avi", fourcc, fps, cv::Size(bodyangle::cDepthWidth, bodyangle::cDepthHeight), iscolor);
+    for(int i = 0; i < alldata.size(); i++){
+        frame = alldata[i].draw();
+        Writer.write(frame);
+        process.setValue(i);
+        if(process.wasCanceled())
+            break;
+    }
+    Writer.release();
+    load.close();
+    curfolder = QString::null;
 }

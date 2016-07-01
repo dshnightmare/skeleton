@@ -51,7 +51,6 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui \
             fillinfo.ui \
-            seeangle.ui \
     mylistitem.ui
 
 include(QRCode/QRCode.pri)

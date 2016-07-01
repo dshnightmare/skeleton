@@ -4,12 +4,15 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include <map>
+#include <vector>
 #include <QString>
+#include <QProgressDialog>
 #include "myKinect.h"
 #include "fillinfo.h"
 #include "mylistitem.h"
 #include "anglemanager.h"
 #include "QRController.h"
+#include "bodyangle.h"
 
 enum taketype{Kinect_take=0,Kinect_pause=1,Kinect_exit=2};
 
@@ -45,7 +48,7 @@ private slots:
 
     //void on_seeangle_clicked();
 
-    void r_end();
+    //void r_end();
 
     void on_select_position_currentIndexChanged(int index);
 
@@ -54,6 +57,8 @@ private slots:
     void delete_list_item(QListWidgetItem *item);
 
     void r_stable_angle(QString name, int angle);
+
+    void on_video_clicked();
 
 signals:
     void s_angles(float*);
@@ -64,11 +69,11 @@ protected:
 private:
     Ui::MainWindow *ui;
     taketype takeflag;
-    bool seeangleflag;
     fillinfo* w1;
     map<QString, QListWidgetItem*> curListAngle;
     map<QListWidgetItem*, std::tuple<int, int, int>> itemCategory;
     AngleManager* anglemanager;
+    QString curfolder;
 };
 
 #endif // MAINWINDOW_H

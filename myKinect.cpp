@@ -10,12 +10,6 @@
 static QMutex rwimg;
 
 using namespace std;
-void thread_imwrite(string s,cv::Mat m)
-{
-    cv::Mat t1;
-    m.copyTo(t1);
-    cv::imwrite(s,t1);
-}
 void thread_rgbimwrite(string s,cv::Mat m)
 {
     cv::imwrite(s,m);
@@ -271,11 +265,11 @@ void CBodyBasics::Update()
 //        colorImg.copyTo(m);
         QtConcurrent::run(thread_rgbimwrite,s1,m);
 
-        sprintf(s, "%s\\2dskeleton\\%d.jpg", sav_path, frames);
-        s1=s;
-        cv::Mat m1;
-        skeletonImg.copyTo(m1);
-        QtConcurrent::run(thread_rgbimwrite,s1,m1);
+//        sprintf(s, "%s\\2dskeleton\\%d.jpg", sav_path, frames);
+//        s1=s;
+//        cv::Mat m1;
+//        skeletonImg.copyTo(m1);
+//        QtConcurrent::run(thread_rgbimwrite,s1,m1);
 
         ++frames;
     }
