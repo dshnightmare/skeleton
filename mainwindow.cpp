@@ -9,6 +9,8 @@
 #include "QMutex"
 #include "QTextCodec"
 #include "mylistitem.h"
+#include "boost/iostreams/stream.hpp"
+#include "boost/iostreams/device/array.hpp"
 
 static QMutex flagLock;
 static QMutex testlock;
@@ -106,10 +108,10 @@ QString MainWindow::makedir()
     {
         mkdirsuccess=dir->mkdir(tfolder+"//skeleton");
     }
-    if (!dir->exists(tfolder+"//2dskeleton"))
-    {
-        mkdirsuccess=dir->mkdir(tfolder+"//2dskeleton");
-    }
+//    if (!dir->exists(tfolder+"//2dskeleton"))
+//    {
+//        mkdirsuccess=dir->mkdir(tfolder+"//2dskeleton");
+//    }
     return tfolder;
 }
 
@@ -429,21 +431,28 @@ void MainWindow::on_video_clicked()
     }
     //读入数据
     char s[1000];
-    sprintf(s, "%s\\skeleton\\save", curfolder);
+    sprintf(s, "%s\\skeleton\\save", curfolder.toLatin1().data());
+
     ifstream load;
+    load.open(s);
     if(!load){
         curfolder = QString::null;
         QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("读入数据失败，请重新检测"));
         load.close();
         return;
     }
-    boost::archive::text_iarchive ia(load);
+
     vector<bodyangle> alldata;
     bodyangle tmp;
-    while(!load.eof()){
+    char t[10000];
+    while(load.getline(t, sizeof(t))){
+        boost::iostreams::basic_array<char> sr(t, strlen(t));
+        boost::iostreams::stream<boost::iostreams::basic_array<char> > source(sr);
+        boost::archive::text_iarchive ia(source);
         ia >> tmp;
         alldata.emplace_back(tmp);
     }
+
     if(alldata.size() == 0){
         curfolder = QString::null;
         QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("数据为空，无法生成视频"));
@@ -454,9 +463,11 @@ void MainWindow::on_video_clicked()
     QProgressDialog process(this);
     process.setWindowTitle(QString::fromLocal8Bit("提示"));
     process.setLabelText(QString::fromLocal8Bit("处理中"));
-    process.setRange(0, alldata.size());
+    process.setRange(0, alldata.size() - 1);
     process.setModal(true);
     process.setCancelButtonText(QString::fromLocal8Bit("取消"));
+    process.setMinimumDuration(0);
+
 
     //生成视频并更新进度条
     int fourcc = CV_FOURCC('M', 'J', 'P', 'G');
@@ -466,6 +477,14 @@ void MainWindow::on_video_clicked()
     cv::VideoWriter Writer = cv::VideoWriter(curfolder.toStdString() + "\\video.avi", fourcc, fps, cv::Size(bodyangle::cDepthWidth, bodyangle::cDepthHeight), iscolor);
     for(int i = 0; i < alldata.size(); i++){
         frame = alldata[i].draw();
+        if(i > 0){
+            cv::Mat none;
+            none.create(bodyangle::cDepthHeight, bodyangle::cDepthWidth, CV_8UC3);
+            none.setTo(0);
+            for(int j = alldata[i - 1].frame + 1; j < alldata[i].frame; j++){
+                Writer.write(none);
+            }
+        }
         Writer.write(frame);
         process.setValue(i);
         if(process.wasCanceled())
