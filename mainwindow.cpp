@@ -212,7 +212,7 @@ void MainWindow::on_start_clicked()
     for(int i = 0; i < ui->selected_angles->count(); i++){
         ((MyListItem *)ui->selected_angles->itemWidget(ui->selected_angles->item(i)))->setAngle(0);
     }
-    connect(this,SIGNAL(s_angles(double*)),anglemanager,SLOT(r_angles(double*)));
+    connect(this,SIGNAL(s_angles(float*)),anglemanager,SLOT(r_angles(float*)));
     connect(anglemanager,SIGNAL(s_stable_angle(QString, int)), this, SLOT(r_stable_angle(QString,int)));
     QtConcurrent::run(this,&MainWindow::Kinectrun,ba);
 }
@@ -244,7 +244,7 @@ void MainWindow::on_stop_clicked()
     flagLock.unlock();
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
     ui->pause->setText(QString::fromLocal8Bit("暂停"));
-    disconnect(this,SIGNAL(s_angles(double*)),anglemanager,SLOT(r_angles(double*)));
+    disconnect(this,SIGNAL(s_angles(float*)),anglemanager,SLOT(r_angles(float*)));
     disconnect(anglemanager,SIGNAL(s_stable_angle(QString, int)), this, SLOT(r_stable_angle(QString,int)));
     delete w1;
     w1=NULL;
@@ -307,24 +307,6 @@ void MainWindow::on_fillinfo_clicked()
 //    flagLock1.unlock();
 //    w2->show();
 //}
-void MainWindow::on_seeangle_clicked()
-{
-    if (w2==NULL)
-    {
-        w2=new seeangle;
-    }
-    w2->setWindowTitle(QString::fromLocal8Bit("查看角度"));
-    w2->setWindowFlags(Qt::WindowCloseButtonHint);
-    w2->setGeometry(x()+100,y()+100,1151,350);
-    w2->setFixedWidth(1151);
-    w2->setFixedHeight(350);
-    connect(this,SIGNAL(s_angles(float*)),w2,SLOT(r_angles(float*)));
-    connect(w2,SIGNAL(s_end()),this,SLOT(r_end()));
-    flagLock1.lock();
-    seeangleflag=true;
-    flagLock1.unlock();
-    w2->show();
-}
 
 void MainWindow::r_end()
 {

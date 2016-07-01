@@ -17,16 +17,16 @@ Q_OBJECT
 public:
     explicit AngleManager(QwtPlot *p);
     ~AngleManager();
-    void refresh_angle(double *angles);
+    void refresh_angle(float *angles);
     void setcheck(int i, int j, int k, bool flag);
     void clear();
 private:
     void makepen();
     inline int fromCategoryToIndex(int i, int j, int k);
-    void refresh_one_angle(int index, double value);
+    void refresh_one_angle(int index, float value);
 
 public slots:
-    void r_angles(double *angles);
+    void r_angles(float *angles);
 signals:
     void s_stable_angle(QString, int);
 private:
