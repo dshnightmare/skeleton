@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MyListItem</class>
- <widget class="QWidget" name="MyListItem">
+ <class>MyListHeadItem</class>
+ <widget class="QWidget" name="MyListHeadItem">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -47,7 +47,7 @@
       <number>10</number>
      </property>
      <item>
-      <widget class="QLabel" name="name">
+      <widget class="QLabel" name="label">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -57,52 +57,49 @@
        <property name="font">
         <font>
          <family>微软雅黑</family>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
+         <pointsize>10</pointsize>
         </font>
        </property>
        <property name="text">
-        <string>xxxxxx</string>
+        <string>类型</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="angle">
-       <property name="font">
-        <font>
-         <family>微软雅黑</family>
-         <pointsize>14</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>000</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="del">
+      <widget class="QLabel" name="label_2">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">QPushButton {border-image: url(:/button_background/images/button_delete.png);}
-QPushButton:hover:!pressed {border-image: url(:/button_background/images/button_delete_hover.png);}
-QPushButton:hover:pressed {border-image: url(:/button_background/images/button_delete_down.png);}</string>
+       <property name="font">
+        <font>
+         <family>微软雅黑</family>
+         <pointsize>10</pointsize>
+        </font>
        </property>
        <property name="text">
-        <string/>
+        <string>稳定值</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <family>微软雅黑</family>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>操作</string>
        </property>
       </widget>
      </item>

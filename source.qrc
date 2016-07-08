@@ -1,0 +1,34 @@
+<RCC>
+    <qresource prefix="/button_background">
+        <file>images/button_video.png</file>
+        <file>images/button_video_down.png</file>
+        <file>images/button_video_hover.png</file>
+        <file>images/button_pause.png</file>
+        <file>images/button_pause_down.png</file>
+        <file>images/button_pause_hover.png</file>
+        <file>images/button_start.png</file>
+        <file>images/button_start_down.png</file>
+        <file>images/button_start_hover.png</file>
+        <file>images/button_stop.png</file>
+        <file>images/button_stop_down.png</file>
+        <file>images/button_stop_hover.png</file>
+        <file>images/button_add.png</file>
+        <file>images/button_add_down.png</file>
+        <file>images/button_add_hover.png</file>
+        <file>images/button_tab1.png</file>
+        <file>images/button_tab1_down.png</file>
+        <file>images/button_tab1_hover.png</file>
+        <file>images/button_tab2.png</file>
+        <file>images/button_tab2_down.png</file>
+        <file>images/button_tab2_hover.png</file>
+        <file>images/button_tab3.png</file>
+        <file>images/button_tab3_down.png</file>
+        <file>images/button_tab3_hover.png</file>
+        <file>images/button_delete.png</file>
+        <file>images/button_delete_down.png</file>
+        <file>images/button_delete_hover.png</file>
+        <file>images/button_continue.png</file>
+        <file>images/button_continue_down.png</file>
+        <file>images/button_continue_hover.png</file>
+    </qresource>
+</RCC>

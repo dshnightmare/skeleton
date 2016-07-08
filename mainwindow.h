@@ -13,6 +13,7 @@
 #include "anglemanager.h"
 #include "QRController.h"
 #include "bodyangle.h"
+#include "mylistheaditem.h"
 
 enum taketype{Kinect_take=0,Kinect_pause=1,Kinect_exit=2};
 
@@ -28,6 +29,7 @@ public:
     QString folder;
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    void reshapeButtons();
     QString makedir();
     void Kinectrun(QByteArray ba);
     QString showangle[22];
@@ -70,6 +72,7 @@ private:
     Ui::MainWindow *ui;
     taketype takeflag;
     fillinfo* w1;
+    QButtonGroup* tabChoose;
     map<QString, QListWidgetItem*> curListAngle;
     map<QListWidgetItem*, std::tuple<int, int, int>> itemCategory;
     AngleManager* anglemanager;

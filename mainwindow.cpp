@@ -5,6 +5,8 @@
 #include "Kinect.h"
 #include "QDateTime"
 #include "QDir"
+#include "qbitmap.h"
+#include "qlineedit.h"
 #include "QtConcurrent/QtConcurrent"
 #include "QMutex"
 #include "QTextCodec"
@@ -31,13 +33,45 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->select_position->addItem(QString::fromLocal8Bit("踝"));
     ui->select_position->addItem(QString::fromLocal8Bit("髋"));
     ui->select_position->setCurrentIndex(-1);
+    ui->centralWidget->setPalette(QColor(55, 55, 55));
+    ui->display->setPalette(QColor(225, 225, 225));
+    ui->StackedWidget->setPalette(QColor(242, 242, 242));
+    ui->stacklist->setPalette(QColor(242, 242, 242));
+    tabChoose = new QButtonGroup();
+    tabChoose->addButton(ui->choose1, 0);
+    tabChoose->addButton(ui->choose2, 1);
+    tabChoose->addButton(ui->choose3, 2);
+    tabChoose->setExclusive(true);
+    connect(tabChoose, SIGNAL(buttonClicked(int)), ui->StackedWidget, SLOT(setCurrentIndex(int)));
+    ui->choose1->setChecked(true);
     anglemanager = new AngleManager(ui->qwtPlot);
+    QListWidgetItem *item = new QListWidgetItem();
+    item->setFlags(Qt::NoItemFlags);
+    ui->selected_angles->addItem(item);
+
+    MyListHeadItem* myItem = new MyListHeadItem();
+    ui->selected_angles->setItemWidget(item, myItem);
+    item->setSizeHint(QSize(myItem->rect().width(), myItem->rect().height()));
 }
 
 MainWindow::~MainWindow()
 {
+    delete tabChoose;
+    delete anglemanager;
     delete ui;
 }
+
+void MainWindow::reshapeButtons(){
+    ui->start->setFixedSize(ui->start->width(), ui->start->width() / 2);
+    ui->pause->setFixedSize(ui->pause->width(), ui->pause->width() / 2);
+    ui->stop->setFixedSize(ui->stop->width(), ui->stop->width() / 2);
+    ui->video->setFixedSize(ui->video->width(), ui->video->width() / 2);
+    ui->add_angle->setFixedSize(ui->add_angle->width(), ui->add_angle->width() * 7 / 20);
+    ui->choose1->setFixedSize(ui->choose1->width(), ui->choose1->width() / 3);
+    ui->choose2->setFixedSize(ui->choose2->width(), ui->choose2->width() / 3);
+    ui->choose3->setFixedSize(ui->choose3->width(), ui->choose3->width() / 3);
+}
+
 QImage mat2qimage(cv::Mat img)
 {
     QImage img1;
@@ -171,6 +205,12 @@ void MainWindow::Kinectrun(QByteArray ba)
                 t.start();
                 while(t.elapsed()<1000)
                 QCoreApplication::processEvents();
+
+                //恢复初始状态
+                ui->skeleton->clear();
+                ui->skeleton->update();
+                ui->rgb->clear();
+                ui->rgb->update();
                 break;
             }
 
@@ -210,7 +250,7 @@ void MainWindow::on_start_clicked()
     QString inputfolder=makedir();
     QByteArray ba = inputfolder.toLatin1();
     anglemanager->clear();
-    for(int i = 0; i < ui->selected_angles->count(); i++){
+    for(int i = 1; i < ui->selected_angles->count(); i++){
         ((MyListItem *)ui->selected_angles->itemWidget(ui->selected_angles->item(i)))->setAngle(0);
     }
     connect(this,SIGNAL(s_angles(float*)),anglemanager,SLOT(r_angles(float*)));
@@ -227,14 +267,20 @@ void MainWindow::on_pause_clicked()
     if (takeflag==Kinect_take)
     {
         takeflag=Kinect_pause;
-        QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
-        ui->pause->setText(QString::fromLocal8Bit("继续"));
+//        QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
+//        ui->pause->setText(QString::fromLocal8Bit("继续"));
+        ui->pause->setStyleSheet("QPushButton {border-image: url(:/button_background/images/button_continue.png);}\
+                                  QPushButton:hover:!pressed {border-image: url(:/button_background/images/button_continue_hover.png);}\
+                                  QPushButton:hover:pressed {border-image: url(:/button_background/images/button_continue_down.png);}");
     }
     else if (takeflag==Kinect_pause)
     {
         takeflag=Kinect_take;
-        QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
-        ui->pause->setText(QString::fromLocal8Bit("暂停"));
+//        QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
+//        ui->pause->setText(QString::fromLocal8Bit("暂停"));
+        ui->pause->setStyleSheet("QPushButton {border-image: url(:/button_background/images/button_pause.png);}\
+                                  QPushButton:hover:!pressed {border-image: url(:/button_background/images/button_pause_hover.png);}\
+                                  QPushButton:hover:pressed {border-image: url(:/button_background/images/button_pause_down.png);}");
     }
     flagLock.unlock();
 
@@ -245,8 +291,11 @@ void MainWindow::on_stop_clicked()
     flagLock.lock();
     takeflag=Kinect_exit;
     flagLock.unlock();
-    QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
-    ui->pause->setText(QString::fromLocal8Bit("暂停"));
+//    QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
+//    ui->pause->setText(QString::fromLocal8Bit("暂停"));
+    ui->pause->setStyleSheet("QPushButton {border-image: url(:/button_background/images/button_pause.png);}\
+                              QPushButton:hover:!pressed {border-image: url(:/button_background/images/button_pause_hover.png);}\
+                              QPushButton:hover:pressed {border-image: url(:/button_background/images/button_pause_down.png);}");
     disconnect(this,SIGNAL(s_angles(float*)),anglemanager,SLOT(r_angles(float*)));
     disconnect(anglemanager,SIGNAL(s_stable_angle(QString, int)), this, SLOT(r_stable_angle(QString,int)));
     ui->video->setEnabled(true);
@@ -350,6 +399,7 @@ void MainWindow::on_add_angle_clicked()
         return;
     }
     QListWidgetItem *item = new QListWidgetItem();
+    item->setFlags(Qt::NoItemFlags);
     curListAngle[name] = item;
     itemCategory[item] = std::make_tuple(ui->select_side->currentIndex(), ui->select_position->currentIndex(), ui->select_action->currentIndex());
     ui->selected_angles->addItem(item);

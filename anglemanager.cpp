@@ -18,10 +18,15 @@ AngleManager::AngleManager(QwtPlot *p)
     makepen();
     QwtPlotCanvas *canvas = new QwtPlotCanvas();
     canvas->setPalette(Qt::white);
-    canvas->setBorderRadius(10);
+    //canvas->setBorderRadius(10);
     plot->setCanvas(canvas);
     plot->setAxisScale(QwtPlot::xBottom, 0, 30);
     plot->setAxisScale(QwtPlot::yLeft, -100, 200);
+    QwtPlotGrid *grid = new QwtPlotGrid();
+    grid->enableXMin(true);
+    grid->setMajorPen(Qt::black, 0, Qt::DotLine);//大格子
+    grid->setMinorPen(Qt::gray, 0, Qt::DotLine);//大格子里的小格子
+    grid->attach(plot);
 }
 AngleManager::~AngleManager(){
 
@@ -92,8 +97,14 @@ void AngleManager::refresh_angle(float *angles){
         refresh_one_angle(*i, angles[*i]);
     }
 
-    if (Time_cycle == 0)
+    if (Time_cycle == 0){
+        QwtPlotGrid *grid = new QwtPlotGrid();
+        grid->enableXMin(true);
+        grid->setMajorPen(QPen(Qt::black, 0, Qt::DotLine));//大格子
+        grid->setMinorPen(QPen(Qt::darkGray, 0 , Qt::DotLine));//大格子里的小格子
+        grid->attach(plot);
         plot->replot();
+    }
 }
 
 void AngleManager::setcheck(int i, int j, int k, bool flag){
@@ -102,6 +113,10 @@ void AngleManager::setcheck(int i, int j, int k, bool flag){
         check.insert(index);
     else{
         check.erase(index);
+        for (int j=0;j<30;j++)
+        {
+            showangleplot[index][j] = 0;
+        }
         values[index].clear();
     }
 }
@@ -128,6 +143,11 @@ void AngleManager::refresh_one_angle(int index, float value){
 
         showangleplot[index][29] = value;
         QwtPlotCurve* curve = new QwtPlotCurve(nameset[index]);
+        QwtSymbol* symbol = new QwtSymbol(QwtSymbol::Ellipse);
+        symbol->setPen(Qt::white);
+        symbol->setColor(pens[index]->color());
+        symbol->setSize(8, 8);
+        curve->setSymbol(symbol);
         curve->setPen(*pens[index]);
         curve->setSamples(xplot,showangleplot[index],30);
         curve->setLegendAttribute(QwtPlotCurve::LegendShowLine);

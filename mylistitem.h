@@ -4,7 +4,6 @@
 #include <QWidget>
 #include <QListWidget>
 #include <QPushButton>
-#include <QLCDNumber>
 
 namespace Ui {
 class MyListItem;
@@ -18,7 +17,7 @@ public:
     explicit MyListItem(QWidget *parent = 0, Qt::WindowFlags f=0);
     ~MyListItem();
     void initItem(QString name, QListWidget *list, QListWidgetItem *item);
-    void setAngle(double angle);
+    void setAngle(int angle);
     QString getName();
 
 private:

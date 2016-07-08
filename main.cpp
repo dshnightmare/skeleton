@@ -18,5 +18,6 @@ int main(int argc, char *argv[])
     w.setFixedSize(cur.width(), cur.height());
     w.setWindowFlags(w.windowFlags() ^ Qt::WindowMaximizeButtonHint);
     w.show();
+    w.reshapeButtons();
     return a.exec();
 }

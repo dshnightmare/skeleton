@@ -40,17 +40,23 @@ SOURCES += main.cpp\
     fillinfo.cpp \
     mylistitem.cpp \
     anglemanager.cpp \
-    bodyangle.cpp
+    bodyangle.cpp \
+    mylistheaditem.cpp
 
 HEADERS  += mainwindow.h \
     myKinect.h \
     fillinfo.h \
     mylistitem.h \
     anglemanager.h \
-    bodyangle.h
+    bodyangle.h \
+    mylistheaditem.h
 
 FORMS    += mainwindow.ui \
             fillinfo.ui \
-    mylistitem.ui
+    mylistitem.ui \
+    mylistheaditem.ui
 
 include(QRCode/QRCode.pri)
+
+RESOURCES += \
+    source.qrc
