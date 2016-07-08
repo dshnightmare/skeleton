@@ -208,9 +208,7 @@ void MainWindow::Kinectrun(QByteArray ba)
 
                 //恢复初始状态
                 ui->skeleton->clear();
-                ui->skeleton->update();
                 ui->rgb->clear();
-                ui->rgb->update();
                 break;
             }
 

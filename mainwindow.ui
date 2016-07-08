@@ -230,19 +230,19 @@ QPushButton:hover:pressed {border-image: url(:/button_background/images/button_v
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0">
           <property name="spacing">
-           <number>0</number>
+           <number>5</number>
           </property>
           <property name="leftMargin">
-           <number>0</number>
+           <number>5</number>
           </property>
           <property name="topMargin">
-           <number>0</number>
+           <number>5</number>
           </property>
           <property name="rightMargin">
-           <number>0</number>
+           <number>5</number>
           </property>
           <property name="bottomMargin">
-           <number>0</number>
+           <number>5</number>
           </property>
           <item>
            <widget class="QPushButton" name="choose1">
