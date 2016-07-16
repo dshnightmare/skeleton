@@ -10,6 +10,7 @@
 #include "QtConcurrent/QtConcurrent"
 #include "QMutex"
 #include "QTextCodec"
+#include "QValidator"
 #include "mylistitem.h"
 #include "boost/iostreams/stream.hpp"
 #include "boost/iostreams/device/array.hpp"
@@ -52,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent) :
     MyListHeadItem* myItem = new MyListHeadItem();
     ui->selected_angles->setItemWidget(item, myItem);
     item->setSizeHint(QSize(myItem->rect().width(), myItem->rect().height()));
+    infoPage();
 }
 
 MainWindow::~MainWindow()
@@ -424,6 +426,13 @@ void MainWindow::delete_list_item(QListWidgetItem *item){
         delete item;
 }
 
+void MainWindow::delete_diagnose_list_item(QListWidgetItem *item){
+    ui->diagnosesList->removeItemWidget(item);
+    ui->diagnosesList->takeItem(ui->diagnosesList->row(item));
+    if (item != NULL)
+        delete item;
+}
+
 QString MainWindow::fromCategoryToName(int i, int j, int k){
     QString name;
     QTextStream &qin = QTextStream(&name);
@@ -541,4 +550,198 @@ void MainWindow::on_video_clicked()
     Writer.release();
     load.close();
     curfolder = QString::null;
+}
+
+void MainWindow::infoPage(){
+    //personal info
+    ui->age->setValidator(new QIntValidator(0, 150, this));
+    ui->sex->setCurrentIndex(-1);
+    QDoubleValidator *dvalidator = new QDoubleValidator(1, 300, 1, this);
+    dvalidator->setNotation(QDoubleValidator::StandardNotation);
+    ui->height->setValidator(dvalidator);
+    ui->weight->setValidator(dvalidator);
+    connect(ui->height, SIGNAL(textEdited(QString)), this, SLOT(setBMI(QString)));
+    connect(ui->weight, SIGNAL(textEdited(QString)), this, SLOT(setBMI(QString)));
+    ui->mtype->setCurrentIndex(-1);
+    QRegExp rx("[0-9]+$");
+    QRegExpValidator *rvalidator = new QRegExpValidator(rx);
+    ui->card->setValidator(rvalidator);
+
+    //symptom
+    ui->side->setCurrentIndex(-1);
+    ui->pos->setCurrentIndex(-1);
+    ui->status->setCurrentIndex(-1);
+    connect(ui->aggravate, SIGNAL(toggled(bool)), ui->ayear, SLOT(setEnabled(bool)));
+    connect(ui->aggravate, SIGNAL(toggled(bool)), ui->amonth, SLOT(setEnabled(bool)));
+    connect(ui->aggravate, SIGNAL(toggled(bool)), ui->aday, SLOT(setEnabled(bool)));
+
+    //diagnose
+    diagnoseChoose = new QButtonGroup(this);
+    diagnoseChoose->addButton(ui->knee, 0);
+    diagnoseChoose->addButton(ui->hip, 1);
+    connect(ui->knee, SIGNAL(clicked()), this, SLOT(onRadioClickKnee()));
+    connect(ui->hip, SIGNAL(clicked()), this, SLOT(onRadioClickHip()));
+
+
+}
+
+void MainWindow::setBMI(QString s){
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
+    if(!ui->height->text().isEmpty() && !ui->weight->text().isEmpty()){
+        double h = ui->height->text().toDouble() / 100;
+        double w = ui->weight->text().toDouble();
+        double result = w / (h * h);
+        QString eval;
+        if(result < 18.5)
+            eval = QString::fromLocal8Bit("（过轻）");
+        else if(result < 25)
+            eval = QString::fromLocal8Bit("（正常）");
+        else if(result < 28)
+            eval = QString::fromLocal8Bit("（过重）");
+        else if(result < 32)
+            eval = QString::fromLocal8Bit("（肥胖）");
+        else
+            eval = QString::fromLocal8Bit("（非常肥胖）");
+        ui->BMI->setText(QString::number(result, 'f', 1) + eval);
+    }
+    else
+        ui->BMI->setText(QString::null);
+}
+
+
+void  MainWindow::onRadioClickKnee(){
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
+    ui->diagnose->clear();
+    ui->diagnosesList->clear();
+    ui->diagnose->addItems(QStringList() << QString::fromLocal8Bit("膝内翻") <<
+                           QString::fromLocal8Bit("膝关节骨性关节炎（三间室退变型）") <<
+                           QString::fromLocal8Bit("膝关节骨性关节炎（创伤后）") <<
+                           QString::fromLocal8Bit("膝外翻") <<
+                           QString::fromLocal8Bit("膝关节内侧间室骨性关节炎") <<
+                           QString::fromLocal8Bit("髌骨间室骨性关节炎") <<
+                           QString::fromLocal8Bit("髌骨软化") <<
+                           QString::fromLocal8Bit("膝关节外侧间室骨性关节炎") <<
+                           QString::fromLocal8Bit("膝关节滑膜炎") <<
+                           QString::fromLocal8Bit("膝关节积液") <<
+                           QString::fromLocal8Bit("膝关节骨性关节炎（陈旧术后）") <<
+                           QString::fromLocal8Bit("膝关节红肿") <<
+                           QString::fromLocal8Bit("下肢畸形（股骨）") <<
+                           QString::fromLocal8Bit("下肢畸形（胫骨）") <<
+                           QString::fromLocal8Bit("类风湿性关节炎（膝）") <<
+                           QString::fromLocal8Bit("强直性脊柱炎（膝）") <<
+                           QString::fromLocal8Bit("膝关节感染") <<
+                           QString::fromLocal8Bit("膝关节疼痛（不明原因）") <<
+                           QString::fromLocal8Bit("胫骨结节骨骺炎") <<
+                           QString::fromLocal8Bit("膝关节半月板损伤") <<
+                           QString::fromLocal8Bit("膝关节骨梗死") <<
+                           QString::fromLocal8Bit("人工膝关节置换术后假体松动") <<
+                           QString::fromLocal8Bit("人工膝关节置换术后复查"));
+    ui->diagnose->setCurrentIndex(-1);
+
+}
+
+void MainWindow::onRadioClickHip(){
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
+    ui->diagnose->clear();
+    ui->diagnosesList->clear();
+    ui->diagnose->addItems(QStringList() << QString::fromLocal8Bit("原发性髋关节骨性关节炎") <<
+                           QString::fromLocal8Bit("髋臼发育不良") <<
+                           QString::fromLocal8Bit("髋臼发育不良继发骨性关节炎") <<
+                           QString::fromLocal8Bit("髋关节骨性关节炎（创伤性）") <<
+                           QString::fromLocal8Bit("髋关节骨性关节炎（陈旧术后）") <<
+                           QString::fromLocal8Bit("股骨头缺血坏死（0期）") <<
+                           QString::fromLocal8Bit("股骨头缺血坏死（1期）") <<
+                           QString::fromLocal8Bit("股骨头缺血坏死（2期）") <<
+                           QString::fromLocal8Bit("股骨头缺血坏死（3期）") <<
+                           QString::fromLocal8Bit("股骨头缺血坏死（4期）") <<
+                           QString::fromLocal8Bit("髋关节骨性关节炎（陈旧感染）") <<
+                           QString::fromLocal8Bit("髋关节疼痛（不明原因）") <<
+                           QString::fromLocal8Bit("髋关节积液") <<
+                           QString::fromLocal8Bit("髋关节盂唇损伤") <<
+                           QString::fromLocal8Bit("髋关节撞击综合征") <<
+                           QString::fromLocal8Bit("髋关节感染") <<
+                           QString::fromLocal8Bit("强直性脊柱炎（髋）") <<
+                           QString::fromLocal8Bit("类风湿性关节炎（髋）") <<
+                           QString::fromLocal8Bit("人工髋关节置换术后假体松动") <<
+                           QString::fromLocal8Bit("人工髋关节置换术后复查"));
+    ui->diagnose->setCurrentIndex(-1);
+}
+
+void MainWindow::on_diagnoseAdd_clicked()
+{
+    if (ui->diagnose->currentIndex() == -1)
+        return;
+    QListWidgetItem *item = new QListWidgetItem();
+    item->setFlags(Qt::NoItemFlags);
+    ui->diagnosesList->addItem(item);
+
+    MyListItem *myItem = new MyListItem(ui->diagnosesList, Qt::Window);
+    myItem->initItem2(ui->diagnose->currentText(), ui->diagnosesList, item);
+    connect(myItem, SIGNAL(deleteListItem(QListWidgetItem*)), this, SLOT(delete_diagnose_list_item(QListWidgetItem*)));
+    ui->diagnosesList->setItemWidget(item, myItem);
+    item->setSizeHint(QSize(myItem->rect().width(), myItem->rect().height()));
+}
+
+void MainWindow::on_diagnoseGenerate_clicked()
+{
+    if(ui->name->text().isEmpty() || ui->age->text().isEmpty() || ui->sex->currentIndex() == -1
+            || ui->height->text().isEmpty() || ui->weight->text().isEmpty() || ui->mtype->currentIndex() == -1 || ui->card->text().isEmpty()){
+        QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("请完整填写个人信息"));
+        return;
+    }
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
+    ui->result->clear();
+    QTextCursor cursor(ui->result->textCursor());
+    QTextCharFormat format;
+    cursor.movePosition(QTextCursor::Start);
+//    format.setForeground(Qt::red);
+//    cursor.mergeCharFormat(format);
+    cursor.insertText(QDateTime::currentDateTime().toString(QString::fromLocal8Bit("yyyy年MM月dd日")));
+    cursor.insertBlock();
+    cursor.insertBlock();
+    cursor.insertText(QString::fromLocal8Bit("个人信息"));
+    cursor.insertBlock();
+    cursor.insertText(QString::fromLocal8Bit("姓名：") + ui->name->text() + '\t');
+    cursor.insertText(QString::fromLocal8Bit("年龄：") + ui->age->text() + '\t');
+    cursor.insertText(QString::fromLocal8Bit("性别：") + ui->sex->currentText() + '\t');
+    cursor.insertBlock();
+    cursor.insertText(QString::fromLocal8Bit("身高：") + ui->height->text() + "cm\t");
+    cursor.insertText(QString::fromLocal8Bit("体重：") + ui->weight->text() + "kg\t");
+    cursor.insertText(QString::fromLocal8Bit("BMI：") + ui->BMI->text() + '\t');
+    cursor.insertBlock();
+    cursor.insertText(QString::fromLocal8Bit("医疗类型：") + ui->mtype->currentText() + '\t');
+    cursor.insertText(QString::fromLocal8Bit("京医通卡号：") + ui->card->text() + '\t');
+    cursor.insertBlock();
+    cursor.insertBlock();
+    if(ui->side->currentIndex() == -1 || ui->pos->currentIndex() == -1 || ui->status->currentIndex() == -1){
+        QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("请完整填写症状"));
+        return;
+    }
+    QString status = QString::fromLocal8Bit("主诉：");
+    status.append(ui->side->currentText() + ui->pos->currentText() + ui->status->currentText());
+    if(ui->lyear->currentIndex() != 0)
+        status.append(ui->lyear->currentText() + QString::fromLocal8Bit("年"));
+    if(ui->lmonth->currentIndex() != 0)
+        status.append(ui->lmonth->currentText() + QString::fromLocal8Bit("月"));
+    if(ui->lday->currentIndex() != 0)
+        status.append(ui->lday->currentText() + QString::fromLocal8Bit("日"));
+    if(ui->aggravate->isChecked()){
+        status.append(QString::fromLocal8Bit("加重"));
+        if(ui->ayear->currentIndex() != 0)
+            status.append(ui->ayear->currentText() + QString::fromLocal8Bit("年"));
+        if(ui->amonth->currentIndex() != 0)
+            status.append(ui->amonth->currentText() + QString::fromLocal8Bit("月"));
+        if(ui->aday->currentIndex() != 0)
+            status.append(ui->aday->currentText() + QString::fromLocal8Bit("日"));
+    }
+    cursor.insertText(status);
+    cursor.insertBlock();
+    cursor.insertBlock();
+    if(ui->diagnosesList->count() == 0){
+        QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("请完整填写诊断"));
+        return;
+    }
+    cursor.insertText(QString::fromLocal8Bit("诊断："));
+    for(int i = 0; i < ui->diagnosesList->count(); i++)
+        cursor.insertText(((MyListItem *)ui->diagnosesList->itemWidget(ui->diagnosesList->item(i)))->getName() + '\t');
 }

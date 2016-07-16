@@ -31,6 +31,16 @@ void MyListItem::initItem(QString name, QListWidget *list, QListWidgetItem *item
     pitem = item;
 }
 
+void MyListItem::initItem2(QString name, QListWidget *list, QListWidgetItem *item){
+    ui->name->setText(name);
+    ui->angle->setVisible(false);
+    //ui->legend->setStyleSheet("background-color:rgb(255, 0, 0)");
+    ui->del->setFixedSize(ui->del->height(), ui->del->height());
+    connect(ui->del, SIGNAL(clicked(bool)), this, SLOT(deleteItem()));
+    plist = list;
+    pitem = item;
+}
+
 void MyListItem::setAngle(int angle){
     //ui->angle->display(angle);
     QString s;

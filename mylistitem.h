@@ -17,6 +17,7 @@ public:
     explicit MyListItem(QWidget *parent = 0, Qt::WindowFlags f=0);
     ~MyListItem();
     void initItem(QString name, QListWidget *list, QListWidgetItem *item);
+    void initItem2(QString name, QListWidget *list, QListWidgetItem *item);
     void setAngle(int angle);
     QString getName();
 

@@ -36,6 +36,7 @@ public:
     QString saveangle[22];
 private:
     QString fromCategoryToName(int i, int j, int k);
+    void infoPage();
 
 private slots:
     void on_start_clicked();
@@ -58,9 +59,21 @@ private slots:
 
     void delete_list_item(QListWidgetItem *item);
 
+    void delete_diagnose_list_item(QListWidgetItem *item);
+
     void r_stable_angle(QString name, int angle);
 
     void on_video_clicked();
+
+    void setBMI(QString s);
+
+    void onRadioClickKnee();
+
+    void onRadioClickHip();
+
+    void on_diagnoseAdd_clicked();
+
+    void on_diagnoseGenerate_clicked();
 
 signals:
     void s_angles(float*);
@@ -73,6 +86,7 @@ private:
     taketype takeflag;
     fillinfo* w1;
     QButtonGroup* tabChoose;
+    QButtonGroup* diagnoseChoose;
     map<QString, QListWidgetItem*> curListAngle;
     map<QListWidgetItem*, std::tuple<int, int, int>> itemCategory;
     AngleManager* anglemanager;
