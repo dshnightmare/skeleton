@@ -353,6 +353,13 @@ void CBodyBasics::ProcessBody(int frames, int nBodyCount, IBody** ppBodies)
         delete[] depthSpacePosition;
 
     }
+    else
+    {
+        for (int i=0;i<22;i++)
+        {
+            rec_angle_and_dis[i]=0.0;
+        }
+    }
 
 }
 
