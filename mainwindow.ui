@@ -464,7 +464,7 @@ QPushButton:checked {border-image: url(:/button_background/images/button_tab3_do
           <string notr="true"/>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="StackedWidgetPage1">
           <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="10,3,2">
@@ -639,26 +639,13 @@ QPushButton:hover:pressed {border-image: url(:/button_background/images/button_a
                 <property name="title">
                  <string>个人信息</string>
                 </property>
-                <layout class="QGridLayout" name="gridLayout_2" rowstretch="1,1,1" columnstretch="1,2,1,2,1,2">
+                <layout class="QGridLayout" name="gridLayout_2" rowstretch="1,0,0" columnstretch="1,0,0,0,0,0">
                  <property name="horizontalSpacing">
                   <number>10</number>
                  </property>
                  <property name="verticalSpacing">
                   <number>6</number>
                  </property>
-                 <item row="1" column="4">
-                  <widget class="QLabel" name="label_12">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string>BMI</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="2" column="0">
                   <widget class="QLabel" name="label_6">
                    <property name="sizePolicy">
@@ -669,6 +656,19 @@ QPushButton:hover:pressed {border-image: url(:/button_background/images/button_a
                    </property>
                    <property name="text">
                     <string>医疗类型：</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="4">
+                  <widget class="QLabel" name="label_12">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>BMI</string>
                    </property>
                   </widget>
                  </item>
@@ -697,6 +697,16 @@ QPushButton:hover:pressed {border-image: url(:/button_background/images/button_a
                  </item>
                  <item row="1" column="3">
                   <widget class="QLineEdit" name="weight">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QLineEdit" name="height">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                      <horstretch>0</horstretch>
@@ -744,8 +754,11 @@ QPushButton:hover:pressed {border-image: url(:/button_background/images/button_a
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="1">
-                  <widget class="QLineEdit" name="height">
+                 <item row="1" column="5">
+                  <widget class="QLineEdit" name="BMI">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                      <horstretch>0</horstretch>
@@ -780,29 +793,6 @@ QPushButton:hover:pressed {border-image: url(:/button_background/images/button_a
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="3">
-                  <widget class="QLineEdit" name="age">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="5">
-                  <widget class="QLineEdit" name="BMI">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="0" column="5">
                   <widget class="QComboBox" name="sex">
                    <property name="sizePolicy">
@@ -821,6 +811,16 @@ QPushButton:hover:pressed {border-image: url(:/button_background/images/button_a
                      <string>女</string>
                     </property>
                    </item>
+                  </widget>
+                 </item>
+                 <item row="0" column="3">
+                  <widget class="QLineEdit" name="age">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                   </widget>
                  </item>
                  <item row="2" column="3" colspan="3">

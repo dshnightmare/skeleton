@@ -1,12 +1,13 @@
 #include "anglemanager.h"
 
-static double showangleplot[22][30];
+static double showangleplot[28][30];
 static QPen* pens[22];
-static QString nameset[22]={QString::fromLocal8Bit("×óÏ¥ÇüÇú") , QString::fromLocal8Bit("ÓÒÏ¥ÇüÇú") , QString::fromLocal8Bit("×óÏ¥ÉìÖ±") , QString::fromLocal8Bit("ÓÒÏ¥ÉìÖ±") , QString::fromLocal8Bit("×óÏ¥¹ÉëÖ½Ç") ,
+static QString nameset[28]={QString::fromLocal8Bit("×óÏ¥ÇüÇú") , QString::fromLocal8Bit("ÓÒÏ¥ÇüÇú") , QString::fromLocal8Bit("×óÏ¥ÉìÖ±") , QString::fromLocal8Bit("ÓÒÏ¥ÉìÖ±") , QString::fromLocal8Bit("×óÏ¥¹ÉëÖ½Ç") ,
                     QString::fromLocal8Bit("ÓÒÏ¥¹ÉëÖ½Ç") , QString::fromLocal8Bit("×óÏ¥¼ä¾à") , QString::fromLocal8Bit("ÓÒÏ¥¼ä¾à") , QString::fromLocal8Bit("×óõ×¼ä¾à") , QString::fromLocal8Bit("ÓÒõ×¼ä¾à") ,
                     QString::fromLocal8Bit("×ó÷ÅÇüÇú") , QString::fromLocal8Bit("ÓÒ÷ÅÇüÇú") , QString::fromLocal8Bit("×ó÷ÅÉìÖ±") , QString::fromLocal8Bit("ÓÒ÷ÅÉìÖ±") , QString::fromLocal8Bit("×ó÷ÅÍâÕ¹") ,
                     QString::fromLocal8Bit("ÓÒ÷ÅÍâÕ¹") , QString::fromLocal8Bit("×ó÷ÅÄÚÊÕ") , QString::fromLocal8Bit("ÓÒ÷ÅÄÚÊÕ") , QString::fromLocal8Bit("×ó÷ÅÄÚĞı") , QString::fromLocal8Bit("ÓÒ÷ÅÄÚĞı") ,
-                    QString::fromLocal8Bit("×ó÷ÅÍâĞı") , QString::fromLocal8Bit("ÓÒ÷ÅÍâĞı")};
+                    QString::fromLocal8Bit("×ó÷ÅÍâĞı") , QString::fromLocal8Bit("ÓÒ÷ÅÍâĞı"), QString::fromLocal8Bit("×óÖâÇüÇú"), QString::fromLocal8Bit("ÓÒÖâÇüÇú"), QString::fromLocal8Bit("×ó¼çÍâÕ¹"),
+                    QString::fromLocal8Bit("ÓÒ¼çÍâÕ¹"), QString::fromLocal8Bit("×ó¼çºóÉì"), QString::fromLocal8Bit("ÓÒ¼çºóÉì")};
 
 
 AngleManager::AngleManager(QwtPlot *p)
@@ -33,7 +34,7 @@ AngleManager::~AngleManager(){
 }
 
 void AngleManager::clear(){
-    for (int i=0;i<22;i++)
+    for (int i=0;i<28;i++)
     {
         for (int j=0;j<30;j++)
         {
@@ -82,6 +83,10 @@ int AngleManager::fromCategoryToIndex(int i, int j, int k){
         r += 8;
     else if(j == 2)
         r += 10;
+    else if(j==3)
+        r += 22;
+    else
+        r+=24;
     r += k * 2;
     return r;
 }
@@ -145,10 +150,10 @@ void AngleManager::refresh_one_angle(int index, float value){
         QwtPlotCurve* curve = new QwtPlotCurve(nameset[index]);
         QwtSymbol* symbol = new QwtSymbol(QwtSymbol::Ellipse);
         symbol->setPen(Qt::white);
-        symbol->setColor(pens[index]->color());
+        symbol->setColor(pens[index%22]->color());
         symbol->setSize(8, 8);
         curve->setSymbol(symbol);
-        curve->setPen(*pens[index]);
+        curve->setPen(*pens[index%22]);
         curve->setSamples(xplot,showangleplot[index],30);
         curve->setLegendAttribute(QwtPlotCurve::LegendShowLine);
         plot->insertLegend(new QwtLegend(),QwtPlot::RightLegend, 0.1);
@@ -159,7 +164,7 @@ void AngleManager::refresh_one_angle(int index, float value){
 
 void AngleManager::r_angles(float *angles)
 {
-    for (int i=0;i<22;i++)
+    for (int i=0;i<28;i++)
     {
         if (angles[i]<-180 || angles[i] > 180) angles[i] = 0;
     }

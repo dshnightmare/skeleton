@@ -4,12 +4,20 @@ static cv::Mat skeletonImg;
 
 bodyangle::bodyangle()
 {
-
+    initialize();
 }
 
 void bodyangle::initialize()
 {
-
+    for (int i=0;i<JointType_Count;i++)
+    {
+        tjoint_coordinate_3d.plot3d[i][0]=0;
+        tjoint_coordinate_3d.plot3d[i][1]=0;
+        tjoint_coordinate_3d.plot3d[i][2]=0;
+        tjoint_coordinate_2d.plot2d[i][0]=0;
+        tjoint_coordinate_2d.plot2d[i][1]=0;
+        tjoint_coordinate_3d.status[i]=TrackingState_NotTracked;
+    }
 }
 
 void bodyangle::update(DepthSpacePoint depthSpacePosition[], Joint joints[])
@@ -109,6 +117,8 @@ void bodyangle::DrawBone(const Joint* pJoints, const DepthSpacePoint* depthSpace
 
 void bodyangle::calcangles()
 {
+    Joint planar1,planar2,planarn,plannardis,vec;
+    float tt;
     DepthSpacePoint joint_coordinate_2d[JointType_Count];
     Joint joint_coordinate_3d[JointType_Count];
     for (int i=0;i<JointType_Count;i++)
@@ -169,15 +179,14 @@ void bodyangle::calcangles()
     angles[15] = calc_angle_vertical(joint_coordinate_3d, JointType_HipRight, JointType_KneeRight);
 
     //÷ÅÄÚÊÕ
-    Joint planar1,planar2,planarn,plannardis,vec;
-    float tt;
+
     {
-        planar1.Position.X=joint_coordinate_3d[JointType_SpineBase].Position.X-joint_coordinate_3d[JointType_HipRight].Position.X;
-        planar1.Position.Y=joint_coordinate_3d[JointType_SpineBase].Position.Y-joint_coordinate_3d[JointType_HipRight].Position.Y;
-        planar1.Position.Z=joint_coordinate_3d[JointType_SpineBase].Position.Z-joint_coordinate_3d[JointType_HipRight].Position.Z;
-        planar2.Position.X=joint_coordinate_3d[JointType_KneeRight].Position.X-joint_coordinate_3d[JointType_HipRight].Position.X;
-        planar2.Position.Y=joint_coordinate_3d[JointType_KneeRight].Position.Y-joint_coordinate_3d[JointType_HipRight].Position.Y;
-        planar2.Position.Z=joint_coordinate_3d[JointType_KneeRight].Position.Z-joint_coordinate_3d[JointType_HipRight].Position.Z;
+        planar2.Position.X=joint_coordinate_3d[JointType_SpineBase].Position.X-joint_coordinate_3d[JointType_HipRight].Position.X;
+        planar2.Position.Y=joint_coordinate_3d[JointType_SpineBase].Position.Y-joint_coordinate_3d[JointType_HipRight].Position.Y;
+        planar2.Position.Z=joint_coordinate_3d[JointType_SpineBase].Position.Z-joint_coordinate_3d[JointType_HipRight].Position.Z;
+        planar1.Position.X=joint_coordinate_3d[JointType_KneeRight].Position.X-joint_coordinate_3d[JointType_HipRight].Position.X;
+        planar1.Position.Y=joint_coordinate_3d[JointType_KneeRight].Position.Y-joint_coordinate_3d[JointType_HipRight].Position.Y;
+        planar1.Position.Z=joint_coordinate_3d[JointType_KneeRight].Position.Z-joint_coordinate_3d[JointType_HipRight].Position.Z;
         vec.Position.X = joint_coordinate_3d[JointType_HipLeft].Position.X-joint_coordinate_3d[JointType_KneeLeft].Position.X;
         vec.Position.Y = joint_coordinate_3d[JointType_HipLeft].Position.Y-joint_coordinate_3d[JointType_KneeLeft].Position.Y;
         vec.Position.Z = joint_coordinate_3d[JointType_HipLeft].Position.Z-joint_coordinate_3d[JointType_KneeLeft].Position.Z;
@@ -187,10 +196,14 @@ void bodyangle::calcangles()
         planarn.Position.Y=planar1.Position.Z*planar2.Position.X-planar1.Position.X*planar2.Position.Z;
         planarn.Position.Z=planar1.Position.X*planar2.Position.Y-planar1.Position.Y*planar2.Position.X;
 
-        tt = pow( pow(planarn.Position.X,2.0) +  pow(planarn.Position.Y,2.0) + pow(planarn.Position.Z,2.0) ,float(1/3));
+        tt = pow( pow(planarn.Position.X,2.0) +  pow(planarn.Position.Y,2.0) + pow(planarn.Position.Z,2.0) ,0.5);
         planarn.Position.X/=tt;planarn.Position.Y/=tt;planarn.Position.Z/=tt;
+//        qDebug("%f %f %f %f\n",tt,planarn.Position.X,planarn.Position.Y,planarn.Position.Z);
 
         tt = planarn.Position.X*vec.Position.X+planarn.Position.Y*vec.Position.Y+planarn.Position.Z*vec.Position.Z;
+//        qDebug("%f %f %f %f\n",tt,planarn.Position.X,planarn.Position.Y,planarn.Position.Z);
+//        qDebug("%f %f %f %f\n",tt,vec.Position.X,vec.Position.Y,vec.Position.Z);
+
         plannardis.Position.X=planarn.Position.X*tt;plannardis.Position.Y=planarn.Position.Y*tt;plannardis.Position.Z=planarn.Position.Z*tt;
 
         vec.TrackingState=TrackingState_NotTracked;
@@ -227,7 +240,7 @@ void bodyangle::calcangles()
         planarn.Position.Y=planar1.Position.Z*planar2.Position.X-planar1.Position.X*planar2.Position.Z;
         planarn.Position.Z=planar1.Position.X*planar2.Position.Y-planar1.Position.Y*planar2.Position.X;
 
-        tt = pow( pow(planarn.Position.X,2.0) +  pow(planarn.Position.Y,2.0) + pow(planarn.Position.Z,2.0) ,float(1/3));
+        tt = pow( pow(planarn.Position.X,2.0) +  pow(planarn.Position.Y,2.0) + pow(planarn.Position.Z,2.0) ,0.5);
         planarn.Position.X/=tt;planarn.Position.Y/=tt;planarn.Position.Z/=tt;
 
         tt = planarn.Position.X*vec.Position.X+planarn.Position.Y*vec.Position.Y+planarn.Position.Z*vec.Position.Z;
@@ -246,8 +259,6 @@ void bodyangle::calcangles()
         {
              vec.TrackingState=TrackingState_Tracked;
         }
-
-
         angles[17] = calc_angle_verticalt(vec, plannardis);
     }
 
@@ -277,6 +288,102 @@ void bodyangle::calcangles()
     //÷ÅÐý2
     angles[20] = -angles[18];
     angles[21] = -angles[19];
+
+    //ÖâÇüÇú
+    angles[22] = calc_angle3(joint_coordinate_3d, JointType_WristLeft, JointType_ElbowLeft, JointType_ShoulderLeft);
+    angles[23] = calc_angle3(joint_coordinate_3d, JointType_WristRight, JointType_ElbowRight, JointType_ShoulderRight);
+
+    //¼çÍâÕ¹
+    angles[24] = calc_angle4(joint_coordinate_3d, JointType_SpineBase,JointType_SpineMid,JointType_ShoulderLeft,JointType_ElbowLeft);
+    angles[25] = calc_angle4(joint_coordinate_3d, JointType_SpineBase,JointType_SpineMid,JointType_ShoulderRight,JointType_ElbowRight);
+
+    //¼çºóÉì
+
+    {
+        planar1.Position.X=joint_coordinate_3d[JointType_SpineMid].Position.X-joint_coordinate_3d[JointType_SpineShoulder].Position.X;
+        planar1.Position.Y=joint_coordinate_3d[JointType_SpineMid].Position.Y-joint_coordinate_3d[JointType_SpineShoulder].Position.Y;
+        planar1.Position.Z=joint_coordinate_3d[JointType_SpineMid].Position.Z-joint_coordinate_3d[JointType_SpineShoulder].Position.Z;
+        planar2.Position.X=joint_coordinate_3d[JointType_ShoulderLeft].Position.X-joint_coordinate_3d[JointType_SpineShoulder].Position.X;
+        planar2.Position.Y=joint_coordinate_3d[JointType_ShoulderLeft].Position.Y-joint_coordinate_3d[JointType_SpineShoulder].Position.Y;
+        planar2.Position.Z=joint_coordinate_3d[JointType_ShoulderLeft].Position.Z-joint_coordinate_3d[JointType_SpineShoulder].Position.Z;
+        vec.Position.X = joint_coordinate_3d[JointType_ElbowLeft].Position.X-joint_coordinate_3d[JointType_ShoulderLeft].Position.X;
+        vec.Position.Y = joint_coordinate_3d[JointType_ElbowLeft].Position.Y-joint_coordinate_3d[JointType_ShoulderLeft].Position.Y;
+        vec.Position.Z = joint_coordinate_3d[JointType_ElbowLeft].Position.Z-joint_coordinate_3d[JointType_ShoulderLeft].Position.Z;
+
+
+        planarn.Position.X=planar1.Position.Y*planar2.Position.Z-planar1.Position.Z*planar2.Position.Y;
+        planarn.Position.Y=planar1.Position.Z*planar2.Position.X-planar1.Position.X*planar2.Position.Z;
+        planarn.Position.Z=planar1.Position.X*planar2.Position.Y-planar1.Position.Y*planar2.Position.X;
+
+        vec.TrackingState=TrackingState_NotTracked;
+        planarn.TrackingState=TrackingState_NotTracked;
+        if ( (joint_coordinate_3d[JointType_SpineMid].TrackingState!=TrackingState_NotTracked) &&
+              (joint_coordinate_3d[JointType_SpineShoulder].TrackingState!=TrackingState_NotTracked) &&
+              (joint_coordinate_3d[JointType_ShoulderLeft].TrackingState!=TrackingState_NotTracked))
+        {
+             planarn.TrackingState=TrackingState_Tracked;
+        }
+        if ( (joint_coordinate_3d[JointType_ElbowLeft].TrackingState!=TrackingState_NotTracked) &&
+              (joint_coordinate_3d[JointType_ShoulderLeft].TrackingState!=TrackingState_NotTracked))
+        {
+             vec.TrackingState=TrackingState_Tracked;
+        }
+        if (planarn.TrackingState!=TrackingState_NotTracked && vec.TrackingState!=TrackingState_NotTracked)
+        {
+            float d1 = vec.Position.X*planarn.Position.X+vec.Position.Y*planarn.Position.Y+vec.Position.Z*planarn.Position.Z;
+            float d2_1 = pow(vec.Position.X,2)+pow(vec.Position.Y,2)+pow(vec.Position.Z,2);
+            float d2_2 = pow(planarn.Position.X,2)+pow(planarn.Position.Y,2)+pow(planarn.Position.Z,2);
+            float d2 = pow(d2_1, 0.5)*pow(d2_2, 0.5);
+            angles[26] = acos(d1 / d2) * 180 / 3.1415926;
+        }
+        else
+        {
+            angles[26]=0;
+        }
+    }
+
+    {
+        planar2.Position.X=joint_coordinate_3d[JointType_SpineMid].Position.X-joint_coordinate_3d[JointType_SpineShoulder].Position.X;
+        planar2.Position.Y=joint_coordinate_3d[JointType_SpineMid].Position.Y-joint_coordinate_3d[JointType_SpineShoulder].Position.Y;
+        planar2.Position.Z=joint_coordinate_3d[JointType_SpineMid].Position.Z-joint_coordinate_3d[JointType_SpineShoulder].Position.Z;
+        planar1.Position.X=joint_coordinate_3d[JointType_ShoulderRight].Position.X-joint_coordinate_3d[JointType_SpineShoulder].Position.X;
+        planar1.Position.Y=joint_coordinate_3d[JointType_ShoulderRight].Position.Y-joint_coordinate_3d[JointType_SpineShoulder].Position.Y;
+        planar1.Position.Z=joint_coordinate_3d[JointType_ShoulderRight].Position.Z-joint_coordinate_3d[JointType_SpineShoulder].Position.Z;
+        vec.Position.X = joint_coordinate_3d[JointType_ElbowRight].Position.X-joint_coordinate_3d[JointType_ShoulderRight].Position.X;
+        vec.Position.Y = joint_coordinate_3d[JointType_ElbowRight].Position.Y-joint_coordinate_3d[JointType_ShoulderRight].Position.Y;
+        vec.Position.Z = joint_coordinate_3d[JointType_ElbowRight].Position.Z-joint_coordinate_3d[JointType_ShoulderRight].Position.Z;
+
+
+        planarn.Position.X=planar1.Position.Y*planar2.Position.Z-planar1.Position.Z*planar2.Position.Y;
+        planarn.Position.Y=planar1.Position.Z*planar2.Position.X-planar1.Position.X*planar2.Position.Z;
+        planarn.Position.Z=planar1.Position.X*planar2.Position.Y-planar1.Position.Y*planar2.Position.X;
+
+        vec.TrackingState=TrackingState_NotTracked;
+        planarn.TrackingState=TrackingState_NotTracked;
+        if ( (joint_coordinate_3d[JointType_SpineMid].TrackingState!=TrackingState_NotTracked) &&
+              (joint_coordinate_3d[JointType_SpineShoulder].TrackingState!=TrackingState_NotTracked) &&
+              (joint_coordinate_3d[JointType_ShoulderRight].TrackingState!=TrackingState_NotTracked))
+        {
+             planarn.TrackingState=TrackingState_Tracked;
+        }
+        if ( (joint_coordinate_3d[JointType_ElbowRight].TrackingState!=TrackingState_NotTracked) &&
+              (joint_coordinate_3d[JointType_ShoulderRight].TrackingState!=TrackingState_NotTracked))
+        {
+             vec.TrackingState=TrackingState_Tracked;
+        }
+        if (planarn.TrackingState!=TrackingState_NotTracked && vec.TrackingState!=TrackingState_NotTracked)
+        {
+            float d1 = vec.Position.X*planarn.Position.X+vec.Position.Y*planarn.Position.Y+vec.Position.Z*planarn.Position.Z;
+            float d2_1 = pow(vec.Position.X,2)+pow(vec.Position.Y,2)+pow(vec.Position.Z,2);
+            float d2_2 = pow(planarn.Position.X,2)+pow(planarn.Position.Y,2)+pow(planarn.Position.Z,2);
+            float d2 = pow(d2_1, 0.5)*pow(d2_2, 0.5);
+            angles[27] = acos(d1 / d2) * 180 / 3.1415926;
+        }
+        else
+        {
+            angles[27]=0;
+        }
+    }
 
 }
 

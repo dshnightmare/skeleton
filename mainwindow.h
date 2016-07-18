@@ -15,7 +15,7 @@
 #include "bodyangle.h"
 #include "mylistheaditem.h"
 
-enum taketype{Kinect_take=0,Kinect_pause=1,Kinect_exit=2};
+enum taketype{Kinect_take=0,Kinect_pause=1,Kinect_exit=2,Kinect_locate=3};
 
 namespace Ui {
 class MainWindow;
@@ -32,8 +32,10 @@ public:
     void reshapeButtons();
     QString makedir();
     void Kinectrun(QByteArray ba);
-    QString showangle[22];
-    QString saveangle[22];
+    void locate_hip();
+    void locate_hip_other();
+    QString showangle[28];
+    QString saveangle[28];
 private:
     QString fromCategoryToName(int i, int j, int k);
     void infoPage();
@@ -75,13 +77,32 @@ private slots:
 
     void on_diagnoseGenerate_clicked();
 
+    void r_v1(int num);
+    void r_v2(int num);
+
 signals:
     void s_angles(float*);
+    void s_v1(int);
+    void s_v2(int);
 
 
 protected:
    void closeEvent(QCloseEvent *e);
 private:
+   cv::Point3f left_hip_div;
+   cv::Point3f right_hip_div;
+   cv::Point3f left_hip;
+   cv::Point3f right_hip;
+   QProgressDialog* qpd0;
+   QProgressDialog* qpd1;
+   QProgressDialog* qpd2;
+   cv::Point3f findpoint(cv::Point3f point1,cv::Point3f point2,cv::Point3f point3);
+   cv::Point3f calcnormal(cv::Point3f line1,cv::Point3f line2);
+   cv::Point3f findinter(cv::Point3f d1, cv::Point3f p1, cv::Point3f d2, cv::Point3f p2);
+   bool findokflag;
+
+
+
     Ui::MainWindow *ui;
     taketype takeflag;
     fillinfo* w1;

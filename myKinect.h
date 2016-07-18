@@ -39,7 +39,7 @@ public:
     cv::Mat skeletonImg;
     cv::Mat depthImg;
     cv::Mat colorImg;
-    float rec_angle_and_dis[22];
+    float rec_angle_and_dis[28];
     bodyangle recjoint;
     QMutex visitimg;
     QMutex skeletonImglock;
@@ -47,12 +47,22 @@ public:
     std::ofstream rwsave;
     std::ifstream rwload;
 
+    Joint knee1,knee2;
+    void setoffset(cv::Point3f leftdiv, cv::Point3f rightdiv, cv::Point3f lefthip, cv::Point3f righthip, bool flag);
+
 private:
 	int frames;
 //    void thread_imwrite(std::string s,cv::Mat m);
 	int r_elbow_angle;
 	int r_knee_angle;
 	int r_ankle_angle;
+
+    cv::Point3f lhip;
+    cv::Point3f rhip;
+    cv::Point3f lhdiv;
+    cv::Point3f rhdiv;
+
+    bool relocate_flag;
 
 	char sav_path[1000];
 	IKinectSensor*          m_pKinectSensor;//kinectԴ

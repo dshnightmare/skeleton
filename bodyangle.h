@@ -43,7 +43,7 @@ public:
     void update(DepthSpacePoint depthSpacePosition[],Joint joints[]);
     void calcangles();
     cv::Mat draw();
-    float angles[22];
+    float angles[28];
     jplot_2d tjoint_coordinate_2d;
     jplot_3d tjoint_coordinate_3d;
     template<class Archive>

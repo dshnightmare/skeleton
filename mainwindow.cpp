@@ -18,6 +18,11 @@
 static QMutex flagLock;
 static QMutex testlock;
 
+static const int LocateTimes=300;
+static const int LocateFrames=400;
+static const int FrameStart=50;
+static const int FrameInterval=5;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -33,6 +38,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->select_position->addItem(QString::fromLocal8Bit("膝"));
     ui->select_position->addItem(QString::fromLocal8Bit("踝"));
     ui->select_position->addItem(QString::fromLocal8Bit("髋"));
+    ui->select_position->addItem(QString::fromLocal8Bit("肘"));
+    ui->select_position->addItem(QString::fromLocal8Bit("肩"));
+
     ui->select_position->setCurrentIndex(-1);
     ui->centralWidget->setPalette(QColor(55, 55, 55));
     ui->display->setPalette(QColor(225, 225, 225));
@@ -44,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent) :
     tabChoose->addButton(ui->choose3, 2);
     tabChoose->setExclusive(true);
     connect(tabChoose, SIGNAL(buttonClicked(int)), ui->StackedWidget, SLOT(setCurrentIndex(int)));
-    ui->choose1->setChecked(true);
+    ui->choose2->setChecked(true);
     anglemanager = new AngleManager(ui->qwtPlot);
     QListWidgetItem *item = new QListWidgetItem();
     item->setFlags(Qt::NoItemFlags);
@@ -54,6 +62,18 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->selected_angles->setItemWidget(item, myItem);
     item->setSizeHint(QSize(myItem->rect().width(), myItem->rect().height()));
     infoPage();
+
+
+    connect(this,SIGNAL(s_v1(int)),this,SLOT(r_v1(int)));
+    connect(this,SIGNAL(s_v2(int)),this,SLOT(r_v2(int)));
+
+    left_hip_div.x=0.0;
+    left_hip_div.y=0.0;
+    left_hip_div.z=0.0;
+
+    right_hip_div.x=0.0;
+    right_hip_div.y=0.0;
+    right_hip_div.z=0.0;
 }
 
 MainWindow::~MainWindow()
@@ -156,6 +176,7 @@ void MainWindow::Kinectrun(QByteArray ba)
     char* folder = ba.data();
     CBodyBasics myKinect;
     HRESULT hr = myKinect.InitializeDefaultSensor(folder);
+    myKinect.setoffset(left_hip_div,right_hip_div,left_hip,right_hip,1);
     QImage rgbimg,skeletonimg;
     if (SUCCEEDED(hr)){
         while (1){
@@ -234,6 +255,442 @@ void MainWindow::closeEvent(QCloseEvent *e)
     while(t.elapsed()<1000)
     QCoreApplication::processEvents();
 }
+
+
+void MainWindow::locate_hip()
+{
+
+    QString inputfolder=makedir();
+    QByteArray ba = inputfolder.toLatin1();
+    char* folder = ba.data();
+    CBodyBasics myKinect;
+
+    QImage rgbimg,skeletonimg;
+    int times=LocateFrames;
+    Joint knees[LocateFrames];
+    int cnt=0;
+    HRESULT hr = myKinect.InitializeDefaultSensor(folder);
+
+    if (SUCCEEDED(hr))
+    {
+        emit(s_v1(-1));
+        QTime t;
+        t.start();
+        while(t.elapsed()<100);
+        while(1)
+        {
+            if (cnt>=times) break;
+
+            flagLock.lock();
+            if (takeflag==Kinect_exit)
+            {
+                emit(s_v1(LocateFrames));
+                flagLock.unlock();
+                return;
+            }
+            flagLock.unlock();
+
+            myKinect.Update();
+            if(myKinect.readok==true && myKinect.recjoint.tjoint_coordinate_3d.status[JointType_KneeLeft]==TrackingState_Tracked)
+            {
+                knees[cnt++]=myKinect.knee1;
+            }
+            rgbimg=mat2qimage(myKinect.colorImg);
+            skeletonimg=mat2qimage(myKinect.skeletonImg);
+
+            ui->skeleton->setPixmap(QPixmap::fromImage(skeletonimg.scaled(ui->skeleton->width(),ui->skeleton->height(),Qt::KeepAspectRatio)));
+            ui->skeleton->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
+            ui->rgb->setPixmap(QPixmap::fromImage(rgbimg.scaled(ui->rgb->width(),ui->rgb->height(),Qt::KeepAspectRatio)));
+            ui->rgb->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
+
+            emit(s_v1(cnt));
+            if(qpd1->wasCanceled())
+            {
+                flagLock.lock();
+                takeflag=Kinect_exit;
+                flagLock.unlock();
+                return;
+            }
+
+        }
+        emit(s_v1(cnt));
+    }
+
+    emit(s_v2(-1));
+    QTime t;
+    t.start();
+    while(t.elapsed()<500);
+
+    vector<cv::Point3f> hips;
+    for (int i=FrameStart;i<FrameStart+LocateTimes;i++)
+    {
+        flagLock.lock();
+        if (takeflag==Kinect_exit)
+        {
+            flagLock.unlock();
+            return;
+        }
+        flagLock.unlock();
+
+        cv::Point3f knee1,knee2,knee3,fhip;
+        knee1.x=knees[i].Position.X;knee1.y=knees[i].Position.Y;knee1.z=knees[i].Position.Z;
+        knee2.x=knees[i+FrameInterval].Position.X;knee2.y=knees[i+FrameInterval].Position.Y;knee2.z=knees[i+FrameInterval].Position.Z;
+        knee3.x=knees[i+FrameInterval*2].Position.X;knee3.y=knees[i+FrameInterval*2].Position.Y;knee3.z=knees[i+FrameInterval*2].Position.Z;
+
+        findokflag=true;
+        fhip = findpoint(knee1,knee2,knee3);
+        if (findokflag==true)
+        {
+            hips.push_back(fhip);
+        }
+        emit(s_v2(i+1-FrameStart));
+        if(qpd2->wasCanceled())
+        {
+            flagLock.lock();
+            takeflag=Kinect_exit;
+            flagLock.unlock();
+            return;
+        }
+    }
+    left_hip.x=myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_HipLeft][0],
+    left_hip.y=myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_HipLeft][1],
+    left_hip.z=myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_HipLeft][2];
+
+    float lsumx=0.0,lsumy=0.0,lsumz=0.0;
+    vector<cv::Point3f>::iterator it;
+
+    int tcnt=0;
+    for (it=hips.begin(); it < hips.end();it++)
+    {
+
+
+        if (abs(left_hip.x-(*it).x)+abs(left_hip.y-(*it).y)+abs(left_hip.z-(*it).z)>0.2) continue;
+
+        qDebug("%f %f %f\n",(*it).x,(*it).y,(*it).z);
+        tcnt++;
+        lsumx+=(*it).x;
+        lsumy+=(*it).y;
+        lsumz+=(*it).z;
+    }
+
+    lsumx/=tcnt;
+    lsumy/=tcnt;
+    lsumz/=tcnt;
+
+    left_hip.x-=myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_SpineBase][0];
+    left_hip.y-=myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_SpineBase][1];
+    left_hip.z-=myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_SpineBase][2];
+
+    left_hip_div.x=lsumx-myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_SpineBase][0];
+    left_hip_div.y=lsumy-myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_SpineBase][1];
+    left_hip_div.z=lsumz-myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_SpineBase][2];
+
+    qDebug("%f %f %f\n %f %f %f\n %f %f %f\n",
+                        myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_KneeLeft][0],
+                        myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_KneeLeft][1],
+                        myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_KneeLeft][2],
+                        lsumx, lsumy, lsumz,
+                        myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_HipLeft][0],
+                        myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_HipLeft][1],
+                        myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_HipLeft][2]);
+
+    flagLock.lock();
+    takeflag=Kinect_exit;
+    flagLock.unlock();
+   emit(s_v2(LocateTimes+1));
+
+}
+
+void MainWindow::locate_hip_other()
+{
+    QString inputfolder=makedir();
+    QByteArray ba = inputfolder.toLatin1();
+    char* folder = ba.data();
+    CBodyBasics myKinect;
+
+    QImage rgbimg,skeletonimg;
+    int times=LocateFrames;
+    Joint knees[LocateFrames];
+    int cnt=0;
+    HRESULT hr = myKinect.InitializeDefaultSensor(folder);
+    if (SUCCEEDED(hr))
+    {
+        emit(s_v1(-2));
+        QTime t;
+        t.start();
+        while(t.elapsed()<100);
+        while(1)
+        {
+            if (cnt>=times) break;
+
+            flagLock.lock();
+            if (takeflag==Kinect_exit)
+            {
+                emit(s_v1(LocateFrames));
+                flagLock.unlock();
+                return;
+            }
+            flagLock.unlock();
+
+            myKinect.Update();
+            if(myKinect.readok==true && myKinect.recjoint.tjoint_coordinate_3d.status[JointType_KneeRight]==TrackingState_Tracked)
+            {
+                knees[cnt++]=myKinect.knee2;
+            }
+            rgbimg=mat2qimage(myKinect.colorImg);
+            skeletonimg=mat2qimage(myKinect.skeletonImg);
+
+            ui->skeleton->setPixmap(QPixmap::fromImage(skeletonimg.scaled(ui->skeleton->width(),ui->skeleton->height(),Qt::KeepAspectRatio)));
+            ui->skeleton->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
+            ui->rgb->setPixmap(QPixmap::fromImage(rgbimg.scaled(ui->rgb->width(),ui->rgb->height(),Qt::KeepAspectRatio)));
+            ui->rgb->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
+
+            emit(s_v1(cnt));
+            if(qpd1->wasCanceled())
+            {
+                flagLock.lock();
+                takeflag=Kinect_exit;
+                flagLock.unlock();
+                return;
+            }
+
+        }
+        emit(s_v1(cnt));
+    }
+
+    emit(s_v2(-2));
+    QTime t;
+    t.start();
+    while(t.elapsed()<500);
+
+    vector<cv::Point3f> hips;
+    hips.clear();
+    for (int i=FrameStart;i<FrameStart+LocateTimes;i++)
+    {
+        flagLock.lock();
+        if (takeflag==Kinect_exit)
+        {
+            flagLock.unlock();
+            return;
+        }
+        flagLock.unlock();
+
+        cv::Point3f knee1,knee2,knee3,fhip;
+        knee1.x=knees[i].Position.X;knee1.y=knees[i].Position.Y;knee1.z=knees[i].Position.Z;
+        knee2.x=knees[i+FrameInterval].Position.X;knee2.y=knees[i+FrameInterval].Position.Y;knee2.z=knees[i+FrameInterval].Position.Z;
+        knee3.x=knees[i+FrameInterval*2].Position.X;knee3.y=knees[i+FrameInterval*2].Position.Y;knee3.z=knees[i+FrameInterval*2].Position.Z;
+
+        findokflag=true;
+        fhip = findpoint(knee1,knee2,knee3);
+        if (findokflag==true)
+        {
+            hips.push_back(fhip);
+        }
+        emit(s_v2(i+1-FrameStart));
+        if(qpd2->wasCanceled())
+        {
+            flagLock.lock();
+            takeflag=Kinect_exit;
+            flagLock.unlock();
+            return;
+        }
+    }
+
+
+
+    right_hip.x=myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_HipRight][0],
+    right_hip.y=myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_HipRight][1],
+    right_hip.z=myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_HipRight][2];
+
+    float rsumx=0.0,rsumy=0.0,rsumz=0.0;
+    vector<cv::Point3f>::iterator it;
+
+    int tcnt=0;
+    for (it=hips.begin(); it < hips.end();it++)
+    {
+
+
+        if (abs(right_hip.x-(*it).x)+abs(right_hip.y-(*it).y)+abs(right_hip.z-(*it).z)>0.2) continue;
+
+        qDebug("%f %f %f\n",(*it).x,(*it).y,(*it).z);
+        tcnt++;
+        rsumx+=(*it).x;
+        rsumy+=(*it).y;
+        rsumz+=(*it).z;
+    }
+
+    rsumx/=tcnt;
+    rsumy/=tcnt;
+    rsumz/=tcnt;
+
+    right_hip.x-=myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_SpineBase][0];
+    right_hip.y-=myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_SpineBase][1];
+    right_hip.z-=myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_SpineBase][2];
+
+    right_hip_div.x=rsumx-myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_SpineBase][0];
+    right_hip_div.y=rsumy-myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_SpineBase][1];
+    right_hip_div.z=rsumz-myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_SpineBase][2];
+
+    qDebug("%f %f %f\n %f %f %f\n %f %f %f\n",
+                        myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_KneeRight][0],
+                        myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_KneeRight][1],
+                        myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_KneeRight][2],
+                        rsumx, rsumy, rsumz,
+                        myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_HipRight][0],
+                        myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_HipRight][1],
+                        myKinect.recjoint.tjoint_coordinate_3d.plot3d[JointType_HipRight][2]);
+
+    flagLock.lock();
+    takeflag=Kinect_exit;
+    flagLock.unlock();
+   emit(s_v2(LocateTimes+1));
+
+}
+
+cv::Point3f MainWindow::findpoint(cv::Point3f point1,cv::Point3f point2,cv::Point3f point3)
+{
+    cv::Point3f line1,line2,nline,dline1,dline2,inline1,inline2;
+
+    inline1.x=0.5*(point1.x+point2.x);inline1.y=0.5*(point1.y+point2.y);inline1.z=0.5*(point1.z+point2.z);
+    inline2.x=0.5*(point2.x+point3.x);inline2.y=0.5*(point2.y+point3.y);inline2.z=0.5*(point2.z+point3.z);
+
+    line1.x=point1.x-point2.x;line1.y=point1.y-point2.y;line1.z=point1.z-point2.z;
+    line2.x=point3.x-point2.x;line2.y=point3.y-point2.y;line2.z=point3.z-point2.z;
+    nline = calcnormal(line1,line2);
+    dline1 = calcnormal(line1,nline);
+    dline2 = calcnormal(line2,nline);
+    if (findokflag==false) return point1;
+    return findinter(dline1,inline1,dline2,inline2);
+}
+
+cv::Point3f MainWindow::findinter(cv::Point3f d1, cv::Point3f p1, cv::Point3f d2, cv::Point3f p2)
+{
+    float x1=p1.x,x2=p2.x,y1=p1.y,y2=p2.y,z1=p1.z,z2=p2.z,u1=d1.x,u2=d2.x,v1=d1.y,v2=d2.y,w1=d1.z,w2=d2.z;
+    if ((v2*u1-v1*u2)<0.0000001)
+    {
+        findokflag=false;
+        return d1;
+    }
+    float t2 = (v1*(x2-x1)-u1*(y2-y1))/(v2*u1-v1*u2);
+    float x = x2+u2*t2, y = y2+v2*t2, z = z2+w2*t2;
+    cv::Point3f res;
+    res.x=x;
+    res.y=y;
+    res.z=z;
+    return res;
+}
+
+cv::Point3f MainWindow::calcnormal(cv::Point3f line1,cv::Point3f line2)
+{
+    cv::Point3f normal;
+    normal.x=line1.y*line2.z-line1.z*line2.y;
+    normal.y=line1.z*line2.x-line1.x*line2.z;
+    normal.z=line1.x*line2.y-line1.y*line2.x;
+    float tt = pow(pow(normal.x,2.0)+pow(normal.y,2.0)+pow(normal.z,2.0), 0.5 );
+    if (tt<0.000000001)
+    {
+        findokflag=false;
+        return normal;
+    }
+    normal.x/=tt; normal.y/=tt; normal.z/=tt;
+    return normal;
+
+}
+
+void MainWindow::r_v1(int num)
+{
+    if (num==-1)
+    {
+        qpd1 = new QProgressDialog(this);
+        qpd1->setWindowTitle(QString::fromLocal8Bit("左腿膝关节采集"));
+        qpd1->setLabelText(QString::fromLocal8Bit("采集中"));
+        qpd1->setRange(0, LocateFrames);
+        qpd1->setModal(true);
+        qpd1->setCancelButtonText(QString::fromLocal8Bit("取消"));
+        qpd1->setMinimumDuration(0);
+
+    }
+    else if (num==-2)
+    {
+        qpd1 = new QProgressDialog(this);
+        qpd1->setWindowTitle(QString::fromLocal8Bit("右腿膝关节采集"));
+        qpd1->setLabelText(QString::fromLocal8Bit("采集中"));
+        qpd1->setRange(0, LocateFrames);
+        qpd1->setModal(true);
+        qpd1->setCancelButtonText(QString::fromLocal8Bit("取消"));
+        qpd1->setMinimumDuration(0);
+
+    }
+    else
+    {
+        qpd1->setValue(num);
+    }
+}
+
+void MainWindow::r_v2(int num)
+{
+
+    if (num==-1)
+    {
+        qpd2 = new QProgressDialog(this);
+        qpd2->setWindowTitle(QString::fromLocal8Bit("左腿旋转中心定位"));
+        qpd2->setLabelText(QString::fromLocal8Bit("定位中"));
+        qpd2->setRange(0, LocateTimes+1);
+        qpd2->setModal(true);
+        qpd2->setCancelButtonText(QString::fromLocal8Bit("取消"));
+        qpd2->setMinimumDuration(0);
+    }
+    else if (num==-2)
+    {
+        qpd2 = new QProgressDialog(this);
+        qpd2->setWindowTitle(QString::fromLocal8Bit("右腿旋转中心定位"));
+        qpd2->setLabelText(QString::fromLocal8Bit("定位中"));
+        qpd2->setRange(0, LocateTimes+1);
+        qpd2->setModal(true);
+        qpd2->setCancelButtonText(QString::fromLocal8Bit("取消"));
+        qpd2->setMinimumDuration(0);
+    }
+    else
+    {
+        if (num<90)
+        {
+          qpd2->setValue(num);
+        }
+        else
+        {
+          qpd2->setValue(LocateTimes+1);
+        }
+    }
+}
+
+
+//void MainWindow::on_locate_clicked()
+//{
+//    flagLock.lock();
+//    if (takeflag!=Kinect_exit)
+//    {
+//        flagLock.unlock();
+//        return;
+//    }
+//    takeflag=Kinect_locate;
+//    flagLock.unlock();
+//    QtConcurrent::run(this,&MainWindow::locate_hip);
+
+//}
+//void MainWindow::on_locate_other_clicked()
+//{
+//    flagLock.lock();
+//    if (takeflag!=Kinect_exit)
+//    {
+//        flagLock.unlock();
+//        return;
+//    }
+//    takeflag=Kinect_locate;
+//    flagLock.unlock();
+//    QtConcurrent::run(this,&MainWindow::locate_hip_other);
+//}
+
+
 
 void MainWindow::on_start_clicked()
 {
@@ -383,6 +840,13 @@ void MainWindow::on_select_position_currentIndexChanged(int index)
         ui->select_action->addItem(QString::fromLocal8Bit("内旋"));
         ui->select_action->addItem(QString::fromLocal8Bit("外旋"));
     }
+    else if (index == 3){
+        ui->select_action->addItem(QString::fromLocal8Bit("屈曲"));
+    }
+    else if (index == 4){
+        ui->select_action->addItem(QString::fromLocal8Bit("外展"));
+        ui->select_action->addItem(QString::fromLocal8Bit("后伸"));
+    }
     ui->select_action->setCurrentIndex(-1);
 }
 
@@ -470,6 +934,18 @@ QString MainWindow::fromCategoryToName(int i, int j, int k){
             qin << QString::fromLocal8Bit("内旋");
         else if (k == 5)
             qin << QString::fromLocal8Bit("外旋");
+    }
+    else if (j == 3){
+        qin << QString::fromLocal8Bit("肘");
+        if (k == 0)
+            qin << QString::fromLocal8Bit("屈曲");
+    }
+    else if(j == 4){
+        qin << QString::fromLocal8Bit("肩");
+        if (k == 0)
+            qin << QString::fromLocal8Bit("外展");
+        else if (k == 1)
+            qin << QString::fromLocal8Bit("后伸");
     }
     return name;
 }

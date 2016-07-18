@@ -37,7 +37,7 @@ private:
     int last_stable_angle;
     double xplot[30];
     std::set<int> check;
-    std::deque<int> values[22];
+    std::deque<int> values[28];
 };
 
 #endif // ANGLEMANAGER_H

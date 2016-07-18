@@ -15,9 +15,21 @@ void thread_rgbimwrite(string s,cv::Mat m)
     cv::imwrite(s,m);
 }
 
+void CBodyBasics::setoffset(cv::Point3f leftdiv, cv::Point3f rightdiv, cv::Point3f lefthip, cv::Point3f righthip, bool flag)
+{
+    relocate_flag=flag;
+
+    lhip=lefthip;
+    rhip=righthip;
+    lhdiv=leftdiv;
+    rhdiv=rightdiv;
+
+}
+
 /// Initializes the default Kinect sensor
 HRESULT CBodyBasics::InitializeDefaultSensor(char *folder)
 {
+    relocate_flag=false;
 	//用于判断每次读取操作的成功与否
 	HRESULT hr;
   
@@ -317,7 +329,36 @@ void CBodyBasics::ProcessBody(int frames, int nBodyCount, IBody** ppBodies)
         IBody* pBody = ppBodies[ptr];
         Joint joints[JointType_Count];
         hr = pBody->GetJoints(_countof(joints), joints);
+        knee1=joints[JointType_KneeLeft];
+        knee2=joints[JointType_KneeRight];
         joints[JointType_SpineShoulder].Position.Y=0.5*(joints[JointType_ShoulderLeft].Position.Y+joints[JointType_ShoulderRight].Position.Y);
+
+        if (relocate_flag && abs(lhdiv.x)+abs(lhdiv.y)+abs(lhdiv.z)>0.001)
+        {
+            joints[JointType_HipLeft].Position.X=joints[JointType_SpineBase].Position.X+lhdiv.x +
+            ((joints[JointType_HipLeft].Position.X-joints[JointType_SpineBase].Position.X)-lhip.x);
+
+            joints[JointType_HipLeft].Position.Y=joints[JointType_SpineBase].Position.Y+lhdiv.y +
+            ((joints[JointType_HipLeft].Position.Y-joints[JointType_SpineBase].Position.Y)-lhip.y);
+
+            joints[JointType_HipLeft].Position.Z=joints[JointType_SpineBase].Position.Z+lhdiv.z +
+            ((joints[JointType_HipLeft].Position.Z-joints[JointType_SpineBase].Position.Z)-lhip.z);
+
+        }
+
+        if (relocate_flag && abs(rhdiv.x)+abs(rhdiv.y)+abs(rhdiv.z)>0.001)
+        {
+            joints[JointType_HipRight].Position.X=joints[JointType_SpineBase].Position.X+rhdiv.x +
+            ((joints[JointType_HipRight].Position.X-joints[JointType_SpineBase].Position.X)-rhip.x);
+
+            joints[JointType_HipRight].Position.Y=joints[JointType_SpineBase].Position.Y+rhdiv.y +
+            ((joints[JointType_HipRight].Position.Y-joints[JointType_SpineBase].Position.Y)-rhip.y);
+
+            joints[JointType_HipRight].Position.Z=joints[JointType_SpineBase].Position.Z+rhdiv.z +
+            ((joints[JointType_HipRight].Position.Z-joints[JointType_SpineBase].Position.Z)-rhip.z);
+
+        }
+
         DepthSpacePoint *depthSpacePosition = new DepthSpacePoint[_countof(joints)];
         for (int j = 0; j < _countof(joints); ++j)
         {
@@ -332,7 +373,7 @@ void CBodyBasics::ProcessBody(int frames, int nBodyCount, IBody** ppBodies)
             oa << recjoint;
         }
         skeletonImg=recjoint.draw();
-        for (int i=0;i<22;i++)
+        for (int i=0;i<28;i++)
         {
             rec_angle_and_dis[i]=recjoint.angles[i];
         }
