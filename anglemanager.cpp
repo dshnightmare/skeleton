@@ -85,7 +85,7 @@ int AngleManager::fromCategoryToIndex(int i, int j, int k){
         r += 10;
     else if(j==3)
         r += 22;
-    else
+    else if(j==4)
         r+=24;
     r += k * 2;
     return r;

@@ -464,7 +464,7 @@ QPushButton:checked {border-image: url(:/button_background/images/button_tab3_do
           <string notr="true"/>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="StackedWidgetPage1">
           <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="10,3,2">

@@ -52,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent) :
     tabChoose->addButton(ui->choose3, 2);
     tabChoose->setExclusive(true);
     connect(tabChoose, SIGNAL(buttonClicked(int)), ui->StackedWidget, SLOT(setCurrentIndex(int)));
-    ui->choose2->setChecked(true);
+    ui->choose1->setChecked(true);
     anglemanager = new AngleManager(ui->qwtPlot);
     QListWidgetItem *item = new QListWidgetItem();
     item->setFlags(Qt::NoItemFlags);
@@ -199,12 +199,6 @@ void MainWindow::Kinectrun(QByteArray ba)
                     ui->rgb->setPixmap(QPixmap::fromImage(rgbimg.scaled(ui->rgb->width(),ui->rgb->height(),Qt::KeepAspectRatio)));
                     ui->rgb->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
 
-//                    flagLock1.lock();
-//                    if (seeangleflag==true)
-//                    {
-//                        emit s_angles(myKinect.rec_angle_and_dis);
-//                    }
-//                    flagLock1.unlock();
                     emit s_angles(myKinect.rec_angle_and_dis);
                 }
 
