@@ -1,4 +1,9 @@
-﻿#include "myKinect.h"
+﻿
+
+
+
+
+#include "myKinect.h"
 #include <iostream>
 #include <string>
 #include <string.h>
@@ -15,12 +20,10 @@ void thread_rgbimwrite(string s,cv::Mat m)
     cv::imwrite(s,m);
 }
 
-void CBodyBasics::setoffset(cv::Point3f leftdiv, cv::Point3f rightdiv, cv::Point3f lefthip, cv::Point3f righthip, bool flag)
+void CBodyBasics::setoffset(cv::Point3f leftdiv, cv::Point3f rightdiv, bool flag)
 {
     relocate_flag=flag;
 
-    lhip=lefthip;
-    rhip=righthip;
     lhdiv=leftdiv;
     rhdiv=rightdiv;
 
@@ -269,13 +272,13 @@ void CBodyBasics::Update()
 
     if (readok==true)
     {
-        char s[100];
-        sprintf(s, "%s\\color\\%d.jpg", sav_path, frames);
-        string s1=s;
-        cv::Mat m;
-        cv::resize(colorImg,m,cv::Size(600,337));
-//        colorImg.copyTo(m);
-        QtConcurrent::run(thread_rgbimwrite,s1,m);
+//        char s[100];
+//        sprintf(s, "%s\\color\\%d.jpg", sav_path, frames);
+//        string s1=s;
+//        cv::Mat m;
+//        cv::resize(colorImg,m,cv::Size(600,337));
+////        colorImg.copyTo(m);
+//        QtConcurrent::run(thread_rgbimwrite,s1,m);
 
 //        sprintf(s, "%s\\2dskeleton\\%d.jpg", sav_path, frames);
 //        s1=s;
@@ -314,7 +317,7 @@ void CBodyBasics::ProcessBody(int frames, int nBodyCount, IBody** ppBodies)
 				hr = pBody->GetJoints(_countof(joints), joints);
 				if (SUCCEEDED(hr))
 				{
-                    float dis = joints[JointType_Head].Position.X;
+                    float dis = abs(joints[JointType_Head].Position.X);
                     if (dis<recdis)
                     {
                         recdis=dis;
@@ -332,32 +335,6 @@ void CBodyBasics::ProcessBody(int frames, int nBodyCount, IBody** ppBodies)
         knee1=joints[JointType_KneeLeft];
         knee2=joints[JointType_KneeRight];
         joints[JointType_SpineShoulder].Position.Y=0.5*(joints[JointType_ShoulderLeft].Position.Y+joints[JointType_ShoulderRight].Position.Y);
-
-        if (relocate_flag && abs(lhdiv.x)+abs(lhdiv.y)+abs(lhdiv.z)>0.001)
-        {
-            joints[JointType_HipLeft].Position.X=joints[JointType_SpineBase].Position.X+lhdiv.x +
-            ((joints[JointType_HipLeft].Position.X-joints[JointType_SpineBase].Position.X)-lhip.x);
-
-            joints[JointType_HipLeft].Position.Y=joints[JointType_SpineBase].Position.Y+lhdiv.y +
-            ((joints[JointType_HipLeft].Position.Y-joints[JointType_SpineBase].Position.Y)-lhip.y);
-
-            joints[JointType_HipLeft].Position.Z=joints[JointType_SpineBase].Position.Z+lhdiv.z +
-            ((joints[JointType_HipLeft].Position.Z-joints[JointType_SpineBase].Position.Z)-lhip.z);
-
-        }
-
-        if (relocate_flag && abs(rhdiv.x)+abs(rhdiv.y)+abs(rhdiv.z)>0.001)
-        {
-            joints[JointType_HipRight].Position.X=joints[JointType_SpineBase].Position.X+rhdiv.x +
-            ((joints[JointType_HipRight].Position.X-joints[JointType_SpineBase].Position.X)-rhip.x);
-
-            joints[JointType_HipRight].Position.Y=joints[JointType_SpineBase].Position.Y+rhdiv.y +
-            ((joints[JointType_HipRight].Position.Y-joints[JointType_SpineBase].Position.Y)-rhip.y);
-
-            joints[JointType_HipRight].Position.Z=joints[JointType_SpineBase].Position.Z+rhdiv.z +
-            ((joints[JointType_HipRight].Position.Z-joints[JointType_SpineBase].Position.Z)-rhip.z);
-
-        }
 
         DepthSpacePoint *depthSpacePosition = new DepthSpacePoint[_countof(joints)];
         for (int j = 0; j < _countof(joints); ++j)

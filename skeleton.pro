@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -43,7 +44,9 @@ SOURCES += main.cpp\
     mylistitem.cpp \
     anglemanager.cpp \
     bodyangle.cpp \
-    mylistheaditem.cpp
+    mylistheaditem.cpp \
+    database.cpp \
+    ui_hipscore.cpp
 
 HEADERS  += mainwindow.h \
     myKinect.h \
@@ -51,12 +54,15 @@ HEADERS  += mainwindow.h \
     mylistitem.h \
     anglemanager.h \
     bodyangle.h \
-    mylistheaditem.h
+    mylistheaditem.h \
+    database.h \
+    ui_hipscore.h
 
 FORMS    += mainwindow.ui \
             fillinfo.ui \
     mylistitem.ui \
-    mylistheaditem.ui
+    mylistheaditem.ui \
+    ui_hipscore.ui
 
 include(QRCode/QRCode.pri)
 

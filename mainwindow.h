@@ -14,6 +14,7 @@
 #include "QRController.h"
 #include "bodyangle.h"
 #include "mylistheaditem.h"
+#include "database.h"
 
 enum taketype{Kinect_take=0,Kinect_pause=1,Kinect_exit=2,Kinect_locate=3};
 
@@ -36,6 +37,11 @@ public:
     void locate_hip_other();
     QString showangle[28];
     QString saveangle[28];
+    int hip_score_left;
+    int hip_score_right;
+    int knee_score_left;
+    int knee_score_right;
+
 private:
     QString fromCategoryToName(int i, int j, int k);
     void infoPage();
@@ -80,6 +86,16 @@ private slots:
     void r_v1(int num);
     void r_v2(int num);
 
+    void on_locate_clicked();
+
+    void on_save_clicked();
+
+    void on_screenshot_clicked();
+
+    void on_mark_clicked();
+
+    void on_reset_clicked();
+
 signals:
     void s_angles(float*);
     void s_v1(int);
@@ -101,7 +117,11 @@ private:
    cv::Point3f findinter(cv::Point3f d1, cv::Point3f p1, cv::Point3f d2, cv::Point3f p2);
    bool findokflag;
 
+    //数据库相关
+    database md_db;
 
+    //截图
+    bool ifrecrgbimg;
 
     Ui::MainWindow *ui;
     taketype takeflag;

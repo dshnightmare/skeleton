@@ -48,7 +48,7 @@ public:
     std::ifstream rwload;
 
     Joint knee1,knee2;
-    void setoffset(cv::Point3f leftdiv, cv::Point3f rightdiv, cv::Point3f lefthip, cv::Point3f righthip, bool flag);
+    void setoffset(cv::Point3f leftdiv, cv::Point3f rightdiv, bool flag);
 
 private:
 	int frames;

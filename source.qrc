@@ -30,5 +30,11 @@
         <file>images/button_continue.png</file>
         <file>images/button_continue_down.png</file>
         <file>images/button_continue_hover.png</file>
+        <file>images/localization-down.png</file>
+        <file>images/localization-hover.png</file>
+        <file>images/localization-normal.png</file>
+        <file>images/screen-shot-down.png</file>
+        <file>images/screen-shot-hover.png</file>
+        <file>images/screen-shot-normal.png</file>
     </qresource>
 </RCC>

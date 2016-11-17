@@ -15,36 +15,19 @@
 
 using namespace std;
 
-class imageitem{
+class infoitem{
 public:
     QString name;
-    QString id;
-    QString path;
-    QString date;
-    QString operation;
-    QString chart;
+    QString age;
+    QString sexuality;
+    QString height;
+    QString weight;
+    QString BMI;
+    QString medicinetype;
+    QString cardid;
+    QString complain;
+    QString diagnosis;
     bool exist;
-};
-
-class drawchart{
-public:
-    int type;
-    QPoint p1;
-    QPoint p2;
-    bool onshape(QPoint po);
-    bool onrec(QPoint po);
-};
-
-class drawcharlist{
-public:
-    vector<drawchart> chartlist;
-    void clear(){chartlist.clear();}
-    void insert(drawchart temp){chartlist.push_back(temp);}
-    void update(drawchart oldchart, drawchart newchart);
-    bool ifonshape(QPoint po);
-    drawchart findonshape(QPoint po);
-    bool ifonrec(QPoint po);
-    drawchart findonrec(QPoint po);
 };
 
 class database
@@ -52,10 +35,9 @@ class database
 public:
     database();
     bool initialize();
-    bool insert_imageitem(imageitem item);
-    bool update_imageitem(imageitem item);
-    imageitem query_imageitem(QString path);
-    QStringList query_all();
+    bool insert_infoitem(infoitem item);
+    bool update_infoitem(infoitem item);
+    bool query_infoitem(QString cardid);
 
 };
 

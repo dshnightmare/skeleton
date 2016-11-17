@@ -141,20 +141,21 @@ void bodyangle::calcangles()
     angles[3] = angles[1];
 
     //Ï¥¹ÉëÖ½Ç
-    angles[4] = angles[0];
-    angles[5] = angles[1];
+    angles[4] =180 + angles[0];
+    angles[5] =180 + angles[1];
 
-    float tmax = joint_coordinate_3d[JointType_KneeLeft].Position.X>joint_coordinate_3d[JointType_KneeRight].Position.X?
-                    joint_coordinate_3d[JointType_KneeLeft].Position.X:joint_coordinate_3d[JointType_KneeRight].Position.X;
-    float tmin = joint_coordinate_3d[JointType_KneeLeft].Position.X+joint_coordinate_3d[JointType_KneeRight].Position.X - tmax;
+    float tmax = joint_coordinate_3d[JointType_AnkleLeft].Position.X>joint_coordinate_3d[JointType_AnkleRight].Position.X?
+                    joint_coordinate_3d[JointType_AnkleLeft].Position.X:joint_coordinate_3d[JointType_AnkleRight].Position.X;
+    float tmin = joint_coordinate_3d[JointType_AnkleLeft].Position.X+joint_coordinate_3d[JointType_AnkleRight].Position.X - tmax;
 
-    if (!( ( joint_coordinate_3d[JointType_HipLeft].Position.X > tmin && joint_coordinate_3d[JointType_HipLeft].Position.X < tmax) &&
-           ( joint_coordinate_3d[JointType_AnkleLeft].Position.X > tmin && joint_coordinate_3d[JointType_AnkleLeft].Position.X < tmax ) &&
-           ( joint_coordinate_3d[JointType_HipRight].Position.X > tmin && joint_coordinate_3d[JointType_HipRight].Position.X < tmax) &&
-           ( joint_coordinate_3d[JointType_AnkleRight].Position.X > tmin && joint_coordinate_3d[JointType_AnkleRight].Position.X < tmax ) ))
+    if (  ( joint_coordinate_3d[JointType_KneeLeft].Position.X > tmin && joint_coordinate_3d[JointType_KneeLeft].Position.X < tmax ) )
     {
-        angles[4] = -angles[4];
-        angles[5] = -angles[5];
+        angles[4] = 180 - angles[0];
+    }
+    if (  ( joint_coordinate_3d[JointType_KneeRight].Position.X > tmin && joint_coordinate_3d[JointType_KneeRight].Position.X < tmax ) )
+    {
+
+        angles[5] = 180 - angles[1];
     }
 
 
@@ -167,8 +168,8 @@ void bodyangle::calcangles()
     angles[9] = angles[8];
 
     //÷ÅÇüÇú
-    angles[10] = 180-calc_angle_vertical(joint_coordinate_3d, JointType_KneeLeft, JointType_HipLeft);
-    angles[11] = 180-calc_angle_vertical(joint_coordinate_3d, JointType_KneeRight, JointType_HipRight);
+    angles[10] = 180-calc_angle4(joint_coordinate_3d, JointType_KneeLeft, JointType_HipLeft,JointType_SpineBase,JointType_SpineMid);
+    angles[11] = 180-calc_angle4(joint_coordinate_3d, JointType_KneeRight, JointType_HipRight,JointType_SpineBase,JointType_SpineMid);
 
     //÷ÅÉìÖ±
     angles[12] = -angles[10];
@@ -286,6 +287,7 @@ void bodyangle::calcangles()
 
 
     //÷ÅÐý2
+
     angles[20] = -angles[18];
     angles[21] = -angles[19];
 
@@ -294,8 +296,8 @@ void bodyangle::calcangles()
     angles[23] = calc_angle3(joint_coordinate_3d, JointType_WristRight, JointType_ElbowRight, JointType_ShoulderRight);
 
     //¼çÍâÕ¹
-    angles[24] = calc_angle4(joint_coordinate_3d, JointType_SpineBase,JointType_SpineMid,JointType_ShoulderLeft,JointType_ElbowLeft);
-    angles[25] = calc_angle4(joint_coordinate_3d, JointType_SpineBase,JointType_SpineMid,JointType_ShoulderRight,JointType_ElbowRight);
+    angles[24] = calc_angle4(joint_coordinate_3d, JointType_SpineMid,JointType_SpineShoulder,JointType_ShoulderLeft,JointType_ElbowLeft);
+    angles[25] = calc_angle4(joint_coordinate_3d, JointType_SpineMid,JointType_SpineShoulder,JointType_ShoulderRight,JointType_ElbowRight);
 
     //¼çºóÉì
 

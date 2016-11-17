@@ -22,7 +22,7 @@ AngleManager::AngleManager(QwtPlot *p)
     //canvas->setBorderRadius(10);
     plot->setCanvas(canvas);
     plot->setAxisScale(QwtPlot::xBottom, 0, 30);
-    plot->setAxisScale(QwtPlot::yLeft, -100, 200);
+    plot->setAxisScale(QwtPlot::yLeft, -100, 300);
     QwtPlotGrid *grid = new QwtPlotGrid();
     grid->enableXMin(true);
     grid->setMajorPen(Qt::black, 0, Qt::DotLine);//大格子
@@ -93,7 +93,7 @@ int AngleManager::fromCategoryToIndex(int i, int j, int k){
 
 void AngleManager::refresh_angle(float *angles){
     Time_cycle++;
-    Time_cycle %= 30;
+    Time_cycle %= 15;
 
     if(Time_cycle == 0)
         plot->detachItems();
@@ -128,7 +128,7 @@ void AngleManager::setcheck(int i, int j, int k, bool flag){
 
 void AngleManager::refresh_one_angle(int index, float value){
     values[index].push_back(value);
-    if(values[index].size() > 30)
+    if(values[index].size() > 15)
         values[index].pop_front();
     //判断是否处于稳态：最近的30个角度之间相差最多不超过10
     //todo
@@ -166,7 +166,7 @@ void AngleManager::r_angles(float *angles)
 {
     for (int i=0;i<28;i++)
     {
-        if (angles[i]<-180 || angles[i] > 180) angles[i] = 0;
+//        if (angles[i]<-180 || angles[i] > 200) angles[i] = 0;
     }
     refresh_angle(angles);
 }
