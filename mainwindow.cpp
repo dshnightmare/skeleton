@@ -23,7 +23,7 @@ static const int x_div=10;
 static const int y_div=10;
 static const int z_div=10;
 static const int radious_div=3;
-static const float taken_rate=0.9;
+static const float taken_rate=0.9f;
 
 static const int LocateTimes=300;
 static const int LocateFrames=400;
@@ -34,7 +34,6 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    w1=NULL;
     takeflag=Kinect_exit;
     folder="data";
     ui->setupUi(this);
@@ -87,11 +86,17 @@ MainWindow::MainWindow(QWidget *parent) :
     knee_score_left = -1;
     knee_score_right = -1;
 
-    md_db.initialize();
+    //database
+    queryWidget = new QueryWidget;
+    queryWidget->setWindowTitle(QString::fromLocal8Bit("查询数据库"));
+
+    qRegisterMetaType<bodyangle>("bodyangle");
 }
 
 MainWindow::~MainWindow()
 {
+    if(NULL != queryWidget)
+        delete queryWidget;
     delete tabChoose;
     delete anglemanager;
     delete ui;
@@ -225,6 +230,7 @@ void MainWindow::Kinectrun(QByteArray ba)
                     ui->rgb->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
 
                     emit s_angles(myKinect.rec_angle_and_dis);
+                    emit s_joints(myKinect.recjoint);
                 }
 
             }
@@ -263,11 +269,6 @@ void MainWindow::closeEvent(QCloseEvent *e)
     flagLock.unlock();
     QTime t;
     t.start();
-    if (w1!=NULL)
-    {
-        w1->close();
-        delete w1;
-    }
 
     while(t.elapsed()<1000)
     QCoreApplication::processEvents();
@@ -319,6 +320,10 @@ void MainWindow::locate_hip()
             {
                 emit(s_v1(LocateFrames));
                 flagLock.unlock();
+
+                //恢复初始状态
+                ui->skeleton->clear();
+                ui->rgb->clear();
                 return;
             }
             flagLock.unlock();
@@ -492,7 +497,7 @@ void MainWindow::locate_hip()
     right_hip_div.y=rsumy;
     right_hip_div.z=rsumz;
 
-    qDebug("%d\n %f %f %f\n %f %f %f\n",rsumcnt,lsumx, lsumy, lsumz,rsumx,rsumy,rsumz);
+    //qDebug("%d\n %f %f %f\n %f %f %f\n",rsumcnt,lsumx, lsumy, lsumz,rsumx,rsumy,rsumz);
 
     flagLock.lock();
     takeflag=Kinect_exit;
@@ -501,55 +506,177 @@ void MainWindow::locate_hip()
 
 }
 
-cv::Point3f MainWindow::findpoint(cv::Point3f point1,cv::Point3f point2,cv::Point3f point3)
-{
-    cv::Point3f line1,line2,nline,dline1,dline2,inline1,inline2;
+void MainWindow::cal_valgus(){
+    QString inputfolder=makedir();
+    QByteArray ba = inputfolder.toLatin1();
+    char* folder = ba.data();
+    CBodyBasics myKinect;
 
-    inline1.x=0.5*(point1.x+point2.x);inline1.y=0.5*(point1.y+point2.y);inline1.z=0.5*(point1.z+point2.z);
-    inline2.x=0.5*(point2.x+point3.x);inline2.y=0.5*(point2.y+point3.y);inline2.z=0.5*(point2.z+point3.z);
+    QImage rgbimg,skeletonimg;
+    HRESULT hr = myKinect.InitializeDefaultSensor(folder);
 
-    line1.x=point1.x-point2.x;line1.y=point1.y-point2.y;line1.z=point1.z-point2.z;
-    line2.x=point3.x-point2.x;line2.y=point3.y-point2.y;line2.z=point3.z-point2.z;
-    nline = calcnormal(line1,line2);
-    dline1 = calcnormal(line1,nline);
-    dline2 = calcnormal(line2,nline);
-    if (findokflag==false) return point1;
-    return findinter(dline1,inline1,dline2,inline2);
-}
+    if (SUCCEEDED(hr)){
+        QTime t;
+        t.start();
+        while(t.elapsed()<100);
+        while(1){
+            flagLock.lock();
+            if (takeflag==Kinect_exit)
+            {
+                flagLock.unlock();
+                //恢复初始状态
+                ui->skeleton->clear();
+                ui->rgb->clear();
+                return;
+            }
+            flagLock.unlock();
 
-cv::Point3f MainWindow::findinter(cv::Point3f d1, cv::Point3f p1, cv::Point3f d2, cv::Point3f p2)
-{
-    float x1=p1.x,x2=p2.x,y1=p1.y,y2=p2.y,z1=p1.z,z2=p2.z,u1=d1.x,u2=d2.x,v1=d1.y,v2=d2.y,w1=d1.z,w2=d2.z;
-    if ((v2*u1-v1*u2)<0.0000001)
-    {
-        findokflag=false;
-        return d1;
+            myKinect.Update();
+            bool checkleft = myKinect.recjoint.tjoint_coordinate_3d.status[JointType_KneeLeft] == TrackingState_Tracked &&
+                             myKinect.recjoint.tjoint_coordinate_3d.status[JointType_HipLeft] == TrackingState_Tracked &&
+                             myKinect.recjoint.tjoint_coordinate_3d.status[JointType_AnkleLeft == TrackingState_Tracked];
+            bool checkright = myKinect.recjoint.tjoint_coordinate_3d.status[JointType_KneeRight] == TrackingState_Tracked &&
+                              myKinect.recjoint.tjoint_coordinate_3d.status[JointType_HipRight] == TrackingState_Tracked &&
+                              myKinect.recjoint.tjoint_coordinate_3d.status[JointType_AnkleRight] == TrackingState_Tracked;
+            bool checkboth = checkleft && checkright;
+            if (myKinect.readok ==true && (ui->side->currentIndex() != 0 || checkleft) &&
+                                          (ui->side->currentIndex() != 1 || checkright) &&
+                                          (ui->side->currentIndex() != 2 || checkboth))
+            {
+                if(ui->side->currentIndex() == 0)
+                    emit s_valgus(180 - (int)myKinect.rec_angle_and_dis[4]);
+                else if(ui->side->currentIndex() == 1)
+                    emit s_valgus(180 - (int)myKinect.rec_angle_and_dis[5]);
+                else{
+                    //任意一侧内翻取该侧
+                    if (myKinect.rec_angle_and_dis[4] > 180)
+                        emit s_valgus(180 - (int)myKinect.rec_angle_and_dis[4]);
+                    else if (myKinect.rec_angle_and_dis[5] > 180)
+                        emit s_valgus(180 - (int)myKinect.rec_angle_and_dis[5]);
+                    //否则取大值
+                    else
+                        emit s_valgus(std::max(180 - (int)myKinect.rec_angle_and_dis[4], 180 - (int)myKinect.rec_angle_and_dis[5]));
+                }
+            }
+
+            rgbimg=mat2qimage(myKinect.colorImg);
+            skeletonimg=mat2qimage(myKinect.skeletonImg);
+
+            ui->skeleton->setPixmap(QPixmap::fromImage(skeletonimg.scaled(ui->skeleton->width(),ui->skeleton->height(),Qt::KeepAspectRatio)));
+            ui->skeleton->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
+            ui->rgb->setPixmap(QPixmap::fromImage(rgbimg.scaled(ui->rgb->width(),ui->rgb->height(),Qt::KeepAspectRatio)));
+            ui->rgb->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
+        }
     }
-    float t2 = (v1*(x2-x1)-u1*(y2-y1))/(v2*u1-v1*u2);
-    float x = x2+u2*t2, y = y2+v2*t2, z = z2+w2*t2;
-    cv::Point3f res;
-    res.x=x;
-    res.y=y;
-    res.z=z;
-    return res;
 }
 
-cv::Point3f MainWindow::calcnormal(cv::Point3f line1,cv::Point3f line2)
-{
-    cv::Point3f normal;
-    normal.x=line1.y*line2.z-line1.z*line2.y;
-    normal.y=line1.z*line2.x-line1.x*line2.z;
-    normal.z=line1.x*line2.y-line1.y*line2.x;
-    float tt = pow(pow(normal.x,2.0)+pow(normal.y,2.0)+pow(normal.z,2.0), 0.5 );
-    if (tt<0.000000001)
-    {
-        findokflag=false;
-        return normal;
+//使用外旋+内收联合判断是否能系鞋带
+void MainWindow::cal_shoes(){
+    QString inputfolder=makedir();
+    QByteArray ba = inputfolder.toLatin1();
+    char* folder = ba.data();
+    CBodyBasics myKinect;
+
+    QImage rgbimg,skeletonimg;
+    HRESULT hr = myKinect.InitializeDefaultSensor(folder);
+
+    if (SUCCEEDED(hr)){
+        QTime t;
+        t.start();
+        while(t.elapsed()<100);
+        while(1){
+            flagLock.lock();
+            if (takeflag==Kinect_exit)
+            {
+                flagLock.unlock();
+                //恢复初始状态
+                ui->skeleton->clear();
+                ui->rgb->clear();
+                return;
+            }
+            flagLock.unlock();
+
+            myKinect.Update();
+            bool checkleft = myKinect.recjoint.tjoint_coordinate_3d.status[JointType_KneeLeft] != TrackingState_NotTracked &&
+                             myKinect.recjoint.tjoint_coordinate_3d.status[JointType_HipLeft] != TrackingState_NotTracked &&
+                             myKinect.recjoint.tjoint_coordinate_3d.status[JointType_AnkleLeft != TrackingState_NotTracked];
+            bool checkright = myKinect.recjoint.tjoint_coordinate_3d.status[JointType_KneeRight] != TrackingState_NotTracked &&
+                              myKinect.recjoint.tjoint_coordinate_3d.status[JointType_HipRight] != TrackingState_NotTracked &&
+                              myKinect.recjoint.tjoint_coordinate_3d.status[JointType_AnkleRight] != TrackingState_NotTracked;
+            bool checkboth = checkleft && checkright;
+            if (myKinect.readok ==true && (ui->side->currentIndex() != 0 || checkleft) &&
+                                          (ui->side->currentIndex() != 1 || checkright) &&
+                                          (ui->side->currentIndex() != 2 || checkboth))
+            {
+                if(ui->side->currentIndex() == 0){
+                    emit s_shoes(myKinect.rec_angle_and_dis[16] + myKinect.rec_angle_and_dis[20]);
+                } else if(ui->side->currentIndex() == 1){
+                    emit s_shoes(myKinect.rec_angle_and_dis[17] + myKinect.rec_angle_and_dis[21]);
+                } else{
+                    emit s_shoes(std::min(myKinect.rec_angle_and_dis[16] + myKinect.rec_angle_and_dis[20], myKinect.rec_angle_and_dis[17] + myKinect.rec_angle_and_dis[21]));
+                }
+            }
+
+            rgbimg=mat2qimage(myKinect.colorImg);
+            skeletonimg=mat2qimage(myKinect.skeletonImg);
+
+            ui->skeleton->setPixmap(QPixmap::fromImage(skeletonimg.scaled(ui->skeleton->width(),ui->skeleton->height(),Qt::KeepAspectRatio)));
+            ui->skeleton->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
+            ui->rgb->setPixmap(QPixmap::fromImage(rgbimg.scaled(ui->rgb->width(),ui->rgb->height(),Qt::KeepAspectRatio)));
+            ui->rgb->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
+        }
     }
-    normal.x/=tt; normal.y/=tt; normal.z/=tt;
-    return normal;
-
 }
+
+//cv::Point3f MainWindow::findpoint(cv::Point3f point1,cv::Point3f point2,cv::Point3f point3)
+//{
+//    cv::Point3f line1,line2,nline,dline1,dline2,inline1,inline2;
+
+//    inline1.x=0.5*(point1.x+point2.x);inline1.y=0.5*(point1.y+point2.y);inline1.z=0.5*(point1.z+point2.z);
+//    inline2.x=0.5*(point2.x+point3.x);inline2.y=0.5*(point2.y+point3.y);inline2.z=0.5*(point2.z+point3.z);
+
+//    line1.x=point1.x-point2.x;line1.y=point1.y-point2.y;line1.z=point1.z-point2.z;
+//    line2.x=point3.x-point2.x;line2.y=point3.y-point2.y;line2.z=point3.z-point2.z;
+//    nline = calcnormal(line1,line2);
+//    dline1 = calcnormal(line1,nline);
+//    dline2 = calcnormal(line2,nline);
+//    if (findokflag==false) return point1;
+//    return findinter(dline1,inline1,dline2,inline2);
+//}
+
+//cv::Point3f MainWindow::findinter(cv::Point3f d1, cv::Point3f p1, cv::Point3f d2, cv::Point3f p2)
+//{
+//    float x1=p1.x,x2=p2.x,y1=p1.y,y2=p2.y,z1=p1.z,z2=p2.z,u1=d1.x,u2=d2.x,v1=d1.y,v2=d2.y,w1=d1.z,w2=d2.z;
+//    if ((v2*u1-v1*u2)<0.0000001)
+//    {
+//        findokflag=false;
+//        return d1;
+//    }
+//    float t2 = (v1*(x2-x1)-u1*(y2-y1))/(v2*u1-v1*u2);
+//    float x = x2+u2*t2, y = y2+v2*t2, z = z2+w2*t2;
+//    cv::Point3f res;
+//    res.x=x;
+//    res.y=y;
+//    res.z=z;
+//    return res;
+//}
+
+//cv::Point3f MainWindow::calcnormal(cv::Point3f line1,cv::Point3f line2)
+//{
+//    cv::Point3f normal;
+//    normal.x=line1.y*line2.z-line1.z*line2.y;
+//    normal.y=line1.z*line2.x-line1.x*line2.z;
+//    normal.z=line1.x*line2.y-line1.y*line2.x;
+//    float tt = pow(pow(normal.x,2.0)+pow(normal.y,2.0)+pow(normal.z,2.0), 0.5 );
+//    if (tt<0.000000001)
+//    {
+//        findokflag=false;
+//        return normal;
+//    }
+//    normal.x/=tt; normal.y/=tt; normal.z/=tt;
+//    return normal;
+
+//}
 
 void MainWindow::r_v1(int num)
 {
@@ -648,6 +775,7 @@ void MainWindow::on_start_clicked()
         ((MyListItem *)ui->selected_angles->itemWidget(ui->selected_angles->item(i)))->setAngle(0);
     }
     connect(this,SIGNAL(s_angles(float*)),anglemanager,SLOT(r_angles(float*)));
+    connect(this,SIGNAL(s_joints(bodyangle)),anglemanager,SLOT(r_joints(bodyangle)));
     connect(anglemanager,SIGNAL(s_stable_angle(QString, int)), this, SLOT(r_stable_angle(QString,int)));
     ui->video->setEnabled(false);
     curfolder = ba.data();
@@ -691,19 +819,14 @@ void MainWindow::on_stop_clicked()
                               QPushButton:hover:!pressed {border-image: url(:/button_background/images/button_pause_hover.png);}\
                               QPushButton:hover:pressed {border-image: url(:/button_background/images/button_pause_down.png);}");
     disconnect(this,SIGNAL(s_angles(float*)),anglemanager,SLOT(r_angles(float*)));
+    disconnect(this,SIGNAL(s_joints(bodyangle)),anglemanager,SLOT(r_joints(bodyangle)));
     disconnect(anglemanager,SIGNAL(s_stable_angle(QString, int)), this, SLOT(r_stable_angle(QString,int)));
     ui->video->setEnabled(true);
-    delete w1;
-    w1=NULL;
 }
 
 void MainWindow::on_Qrcode_clicked()
 {
-    if (w1==NULL) return;
     QString parsestr;
-    parsestr=w1->name+'$'+w1->gender+'$'+w1->age+'$'+w1->height+'$'+w1->weight+'$'+w1->medicaltype
-            +'$'+w1->diagonasis+'$'+w1->kneediagnosis+'$'+w1->hipdiagnosis+'$'+w1->otherdiagnosis+'$'
-            +w1->side+'$'+w1->year+'$'+w1->month+'$'+w1->day;
     //Todo: angles information
 
     std::string tstr=parsestr.toStdString();
@@ -720,20 +843,6 @@ void MainWindow::on_Qrcode_clicked()
     QRCodeBitmap.loadFromData(tempQArray, "BMP");
     ui->qrcode->setPixmap(QRCodeBitmap.scaled(ui->qrcode->width(),ui->qrcode->height(),Qt::KeepAspectRatio));
 
-}
-
-void MainWindow::on_fillinfo_clicked()
-{
-    if (w1==NULL)
-    {
-        w1=new fillinfo;
-    }
-    w1->setWindowTitle(QString::fromLocal8Bit("填写信息"));
-    w1->setWindowFlags(Qt::WindowCloseButtonHint);
-    w1->setGeometry(x()+100,y()+100,592,652);
-    w1->setFixedWidth(592);
-    w1->setFixedHeight(652);
-    w1->show();
 }
 
 //void MainWindow::on_seeangle_clicked()
@@ -1081,7 +1190,7 @@ void MainWindow::onRadioClickHip(){
 
 void MainWindow::on_diagnoseAdd_clicked()
 {
-    if (ui->diagnose->currentIndex() == -1)
+    if (ui->diagnose->currentIndex() == -1 || ui->side->currentIndex() == -1)
         return;
     QListWidgetItem *item = new QListWidgetItem();
     item->setFlags(Qt::NoItemFlags);
@@ -1149,6 +1258,11 @@ void MainWindow::on_diagnoseGenerate_clicked()
     cursor.insertText(status);
     cursor.insertBlock();
     cursor.insertBlock();
+    QString grade = QString::fromLocal8Bit("评分：");
+    grade.append(ui->score->text());
+    cursor.insertText(grade);
+    cursor.insertBlock();
+    cursor.insertBlock();
     if(ui->diagnosesList->count() == 0){
         QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("请完整填写诊断"));
         return;
@@ -1165,11 +1279,12 @@ void MainWindow::on_reset_clicked()
     knee_score_left = -1;
     knee_score_right = -1;
 
-    ui->name->setText("");ui->age->setText("");ui->sex->setCurrentIndex(-1);
+    ui->name->setText("");ui->age->setText("");ui->sex->setCurrentIndex(-1);ui->BMI->setText("");ui->score->setText("");
     ui->height->setText("");ui->weight->setText("");ui->mtype->setCurrentIndex(-1);ui->card->setText("");
     ui->side->setCurrentIndex(-1); ui->pos->setCurrentIndex(-1); ui->status->setCurrentIndex(-1);
     ui->lyear->setCurrentIndex(0);ui->lmonth->setCurrentIndex(0);ui->lday->setCurrentIndex(0);
     ui->ayear->setCurrentIndex(0);ui->amonth->setCurrentIndex(0);ui->aday->setCurrentIndex(0);
+    ui->result->clear();
 
     while(ui->diagnosesList->count() != 0)
     {
@@ -1185,20 +1300,25 @@ void MainWindow::on_reset_clicked()
 void MainWindow::on_save_clicked()
 {
     infoitem tmpitem;
+    if(ui->name->text().isEmpty() || ui->age->text().isEmpty() || ui->sex->currentIndex() == -1
+            || ui->height->text().isEmpty() || ui->weight->text().isEmpty() || ui->mtype->currentIndex() == -1 || ui->card->text().isEmpty()){
+        QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("请完整填写个人信息"));
+        return;
+    }
     tmpitem.name = ui->name->text();
     tmpitem.age = ui->age->text();
-    tmpitem.sexuality = ui->sex->currentText();
+    tmpitem.sex = ui->sex->currentText();
     tmpitem.height = ui->height->text();
     tmpitem.weight = ui->weight->text();
     tmpitem.BMI = ui->BMI->text();
     tmpitem.medicinetype = ui->mtype->currentText();
     tmpitem.cardid = ui->card->text();
-
+    tmpitem.score = ui->score->text();
     if(ui->side->currentIndex() == -1 || ui->pos->currentIndex() == -1 || ui->status->currentIndex() == -1){
         QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("请完整填写症状"));
         return;
     }
-    QString status = QString::fromLocal8Bit("主诉：");
+    QString status = QString::fromLocal8Bit("");
     status.append(ui->side->currentText() + ui->pos->currentText() + ui->status->currentText());
     if(ui->lyear->currentIndex() != 0)
         status.append(ui->lyear->currentText() + QString::fromLocal8Bit("年"));
@@ -1219,20 +1339,21 @@ void MainWindow::on_save_clicked()
 
     QString dia;
     dia = "";
-    for(int i = 0; i < ui->diagnosesList->count(); i++)
-        dia = dia + "$:" + ((MyListItem *)ui->diagnosesList->itemWidget(ui->diagnosesList->item(i)))->getName();
+    for(int i = 1; i < ui->diagnosesList->count(); i++)
+        dia += (((MyListItem *)ui->diagnosesList->itemWidget(ui->diagnosesList->item(i)))->getName() + "    ");
     tmpitem.diagnosis = dia;
 
-    if (md_db.query_infoitem(tmpitem.cardid))
-    {
-        md_db.update_infoitem(tmpitem);
-    }
-    else
-    {
-        md_db.insert_infoitem(tmpitem);
-    }
-
-
+//    if (md_db.query_infoitem(tmpitem.cardid))
+//    {
+//        md_db.update_infoitem(tmpitem);
+//    }
+//    else
+//    {
+//        md_db.insert_infoitem(tmpitem);
+//    }
+    if (Database::getInstance()->insert_infoitem(tmpitem))
+        QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("录入成功"));
+    //on_reset_clicked();
 }
 
 void MainWindow::on_screenshot_clicked()
@@ -1242,5 +1363,195 @@ void MainWindow::on_screenshot_clicked()
 
 void MainWindow::on_mark_clicked()
 {
+    flagLock.lock();
+    bool ismarkable = takeflag == Kinect_exit;
+    flagLock.unlock();
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("GBK"));
+    if (!ismarkable){
+        QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("请先结束拍摄"));
+        return;
+    }
+//    if (anglemanager->get_max_angles(0) == -360){
+//        QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("请先拍摄一段数据"));
+//        return;
+//    }
+    if (ui->side->currentIndex() == -1)
+        return;
+    if (ui->knee->isChecked()){
+        KneeScoreWizard wizard(this, ui->side->currentText());
+        connect(&wizard, SIGNAL(scoreChanged(QString)), ui->score, SLOT(setText(QString)));
+        //计算自动得分部分
+        //活动范围
+        int range;
+        if (ui->side->currentIndex() == 0){
+            range = anglemanager->get_max_angles(0) - anglemanager->get_min_angles(0);
+        }else if (ui->side->currentIndex() == 1){
+            range = anglemanager->get_max_angles(1) - anglemanager->get_min_angles(1);
+        }else{
+            range = std::min(anglemanager->get_max_angles(0) - anglemanager->get_min_angles(0),
+                            anglemanager->get_max_angles(1) - anglemanager->get_min_angles(1));
+        }
+        wizard.setField("second", min(25, max(0, range / 5)));
+        //屈曲挛缩畸形
+        int angle, s;
+        if (ui->side->currentIndex() == 0)
+            angle = anglemanager->get_min_angles(0);
+        else if(ui->side->currentIndex() == 1)
+            angle = anglemanager->get_min_angles(1);
+        else
+            angle = std::max(anglemanager->get_min_angles(0), anglemanager->get_min_angles(1));
+        if (angle < 5)
+            s = 0;
+        else if(angle < 10)
+            s = -2;
+        else if(angle < 15)
+            s = -5;
+        else if(angle < 20)
+            s = -10;
+        else
+            s = -15;
+        wizard.setField("fifth", s);
+        //外翻力线
+        connect((KneeValgusPage*)wizard.page(3), SIGNAL(start_Kinect()), this, SLOT(on_cal_valgus_recieve()));
+        connect((KneeValgusPage*)wizard.page(3), SIGNAL(stop_Kinect()), this, SLOT(on_stop_clicked()));
+        connect(this,SIGNAL(s_valgus(int)), (KneeValgusPage*)wizard.page(3), SLOT(setValgus(int)));
+        wizard.exec();
+    }
+    else if (ui->hip->isChecked()){
+        HipScoreWizard wizard(this, ui->side->currentText());
+        connect(&wizard, SIGNAL(scoreChanged(QString)), ui->score, SLOT(setText(QString)));
+        //计算自动得到部分
+        //todo
+        //跛行
+        int d = anglemanager->get_limpDiff();
+        if (d <= 3)
+            wizard.setField("second", 11);
+        else if (d <= 5)
+            wizard.setField("second", 8);
+        else if (d <= 10)
+            wizard.setField("second", 5);
+        else
+            wizard.setField("second", 0);
+        //穿袜子
+        connect((HipPutOnShoesPage*)wizard.page(4), SIGNAL(start_Kinect()), this, SLOT(on_cal_shoes_recieve()));
+        connect((HipPutOnShoesPage*)wizard.page(4), SIGNAL(stop_Kinect()), this, SLOT(on_stop_clicked()));
+        connect(this,SIGNAL(s_shoes(int)), (KneeValgusPage*)wizard.page(4), SLOT(setShoes(int)));
+        //畸形表现
+        int s = 4;
+        if (ui->side->currentIndex() == 0){
+            //下肢不等长
+            if (anglemanager->get_limbDiff() > 3)
+                s = 0;
+            //固定内收畸形 固定内旋畸形 屈髋挛缩畸形
+            if (anglemanager->get_min_angles(16) > 10 || anglemanager->get_min_angles(18) > 10 ||
+                    anglemanager->get_min_angles(10) > 30)
+                s = 0;
 
+        }else if (ui->side->currentIndex() == 1){
+            if (anglemanager->get_min_angles(17) > 10 || anglemanager->get_min_angles(19) > 10 ||
+                    anglemanager->get_min_angles(11) > 30)
+                s = 0;
+        }else{
+            if (std::max(anglemanager->get_min_angles(16), anglemanager->get_min_angles(17)) > 10 ||
+                    std::max(anglemanager->get_min_angles(18), anglemanager->get_min_angles(19)) > 10 ||
+                    std::max(anglemanager->get_min_angles(10), anglemanager->get_min_angles(11)) > 30)
+                s = 0;
+        }
+        wizard.setField("ninth", s);
+        //活动范围
+        int range, rangescore = 0;
+        //屈曲
+        if (ui->side->currentIndex() == 0){
+            range = anglemanager->get_max_angles(10) - anglemanager->get_min_angles(10);
+        }else if (ui->side->currentIndex() == 1){
+            range = anglemanager->get_max_angles(11) - anglemanager->get_min_angles(11);
+        }else{
+            range = std::min(anglemanager->get_max_angles(10) - anglemanager->get_min_angles(10),
+                            anglemanager->get_max_angles(11) - anglemanager->get_min_angles(11));
+        }
+        if (range >= 90)
+            rangescore++;
+        //外展，因角度计算不存在负值，只考虑最大值
+        if (ui->side->currentIndex() == 0){
+            range = anglemanager->get_max_angles(14);
+        }else if (ui->side->currentIndex() == 1){
+            range = anglemanager->get_max_angles(15);
+        }else{
+            range = std::min(anglemanager->get_max_angles(14), anglemanager->get_max_angles(15));
+        }
+        if (range >= 30)
+            rangescore++;
+        //内收，最大值减最小值
+        if (ui->side->currentIndex() == 0){
+            range = anglemanager->get_max_angles(16) - anglemanager->get_min_angles(16);
+        }else if (ui->side->currentIndex() == 1){
+            range = anglemanager->get_max_angles(17) - anglemanager->get_min_angles(17);
+        }else{
+            range = std::min(anglemanager->get_max_angles(16) - anglemanager->get_min_angles(16),
+                            anglemanager->get_max_angles(17) - anglemanager->get_min_angles(17));
+        }
+        if (range >= 20)
+            rangescore++;
+        //外旋
+        if (ui->side->currentIndex() == 0){
+            range = anglemanager->get_max_angles(20) - std::max(0, anglemanager->get_min_angles(20));
+        }else if (ui->side->currentIndex() == 1){
+            range = anglemanager->get_max_angles(21) - std::max(0, anglemanager->get_min_angles(21));
+        }else{
+            range = std::min(anglemanager->get_max_angles(20) - std::max(0, anglemanager->get_min_angles(20)),
+                            anglemanager->get_max_angles(21) - std::max(0, anglemanager->get_min_angles(21)));
+        }
+        if (range >= 20)
+            rangescore++;
+        //内旋
+        if (ui->side->currentIndex() == 0){
+            range = anglemanager->get_max_angles(18) - std::max(0, anglemanager->get_min_angles(18));
+        }else if (ui->side->currentIndex() == 1){
+            range = anglemanager->get_max_angles(19) - std::max(0, anglemanager->get_min_angles(19));
+        }else{
+            range = std::min(anglemanager->get_max_angles(18) - std::max(0, anglemanager->get_min_angles(18)),
+                            anglemanager->get_max_angles(19) - std::max(0, anglemanager->get_min_angles(19)));
+        }
+        if (range >= 15)
+            rangescore++;
+        wizard.setField("tenth", rangescore);
+        wizard.exec();
+    }
+}
+
+void MainWindow::on_cal_valgus_recieve(){
+    flagLock.lock();
+    if (takeflag!=Kinect_exit)
+    {
+        flagLock.unlock();
+        return;
+    }
+    takeflag=Kinect_valgus;
+    flagLock.unlock();
+    QtConcurrent::run(this,&MainWindow::cal_valgus);
+}
+
+void MainWindow::on_cal_shoes_recieve(){
+    flagLock.lock();
+    if (takeflag!=Kinect_exit)
+    {
+        flagLock.unlock();
+        return;
+    }
+    takeflag=Kinect_shoes;
+    flagLock.unlock();
+    QtConcurrent::run(this,&MainWindow::cal_shoes);
+}
+
+void MainWindow::on_query_clicked()
+{
+    if(NULL == queryWidget){
+        queryWidget = new QueryWidget;
+        queryWidget->setWindowTitle(QString::fromLocal8Bit("数据库查询"));
+    }
+    if (queryWidget->isVisible()){
+        queryWidget->close();
+    }
+    queryWidget->update_data();
+    queryWidget->show();
 }

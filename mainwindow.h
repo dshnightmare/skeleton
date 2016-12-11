@@ -8,15 +8,17 @@
 #include <QString>
 #include <QProgressDialog>
 #include "myKinect.h"
-#include "fillinfo.h"
 #include "mylistitem.h"
 #include "anglemanager.h"
 #include "QRController.h"
 #include "bodyangle.h"
 #include "mylistheaditem.h"
 #include "database.h"
+#include "kneescorewizard.h"
+#include "hipscorewizard.h"
+#include "querywidget.h"
 
-enum taketype{Kinect_take=0,Kinect_pause=1,Kinect_exit=2,Kinect_locate=3};
+enum taketype{Kinect_take=0,Kinect_pause=1,Kinect_exit=2,Kinect_locate=3,Kinect_valgus=4, Kinect_shoes=5};
 
 namespace Ui {
 class MainWindow;
@@ -35,6 +37,8 @@ public:
     void Kinectrun(QByteArray ba);
     void locate_hip();
     void locate_hip_other();
+    void cal_valgus();
+    void cal_shoes();
     QString showangle[28];
     QString saveangle[28];
     int hip_score_left;
@@ -55,7 +59,7 @@ private slots:
     
     void on_Qrcode_clicked();
 
-    void on_fillinfo_clicked();
+    //void on_fillinfo_clicked();
 
     //void on_seeangle_clicked();
 
@@ -96,36 +100,44 @@ private slots:
 
     void on_reset_clicked();
 
+    void on_cal_valgus_recieve();
+
+    void on_cal_shoes_recieve();
+
+    void on_query_clicked();
+
 signals:
     void s_angles(float*);
+    void s_joints(bodyangle);
     void s_v1(int);
     void s_v2(int);
+    void s_valgus(int);
+    void s_shoes(int);
 
 
 protected:
    void closeEvent(QCloseEvent *e);
 private:
-   cv::Point3f left_hip_div;
-   cv::Point3f right_hip_div;
-   cv::Point3f left_hip;
-   cv::Point3f right_hip;
-   QProgressDialog* qpd0;
-   QProgressDialog* qpd1;
-   QProgressDialog* qpd2;
-   cv::Point3f findpoint(cv::Point3f point1,cv::Point3f point2,cv::Point3f point3);
-   cv::Point3f calcnormal(cv::Point3f line1,cv::Point3f line2);
-   cv::Point3f findinter(cv::Point3f d1, cv::Point3f p1, cv::Point3f d2, cv::Point3f p2);
-   bool findokflag;
+    cv::Point3f left_hip_div;
+    cv::Point3f right_hip_div;
+    cv::Point3f left_hip;
+    cv::Point3f right_hip;
+    QProgressDialog* qpd0;
+    QProgressDialog* qpd1;
+    QProgressDialog* qpd2;
+//   cv::Point3f findpoint(cv::Point3f point1,cv::Point3f point2,cv::Point3f point3);
+//   cv::Point3f calcnormal(cv::Point3f line1,cv::Point3f line2);
+//   cv::Point3f findinter(cv::Point3f d1, cv::Point3f p1, cv::Point3f d2, cv::Point3f p2);
+//   bool findokflag;
 
     //数据库相关
-    database md_db;
+    QueryWidget *queryWidget;
 
     //截图
     bool ifrecrgbimg;
 
     Ui::MainWindow *ui;
     taketype takeflag;
-    fillinfo* w1;
     QButtonGroup* tabChoose;
     QButtonGroup* diagnoseChoose;
     map<QString, QListWidgetItem*> curListAngle;

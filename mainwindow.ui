@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>937</width>
-    <height>579</height>
+    <height>583</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -442,7 +442,7 @@ QPushButton:checked {border-image: url(:/button_background/images/button_tab3_do
           <string notr="true"/>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="StackedWidgetPage1">
           <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="10,3,2">
@@ -618,250 +618,6 @@ QPushButton:hover:pressed {border-image: url(:/button_background/images/button_a
               <property name="bottomMargin">
                <number>3</number>
               </property>
-              <item row="0" column="0">
-               <widget class="QGroupBox" name="groupBox">
-                <property name="font">
-                 <font>
-                  <family>微软雅黑</family>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="title">
-                 <string>个人信息</string>
-                </property>
-                <layout class="QGridLayout" name="gridLayout_2">
-                 <property name="leftMargin">
-                  <number>3</number>
-                 </property>
-                 <property name="topMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="rightMargin">
-                  <number>3</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>0</number>
-                 </property>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="name">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="2">
-                  <widget class="QLabel" name="label_7">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string>年龄：</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_4">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string>姓名：</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="3">
-                  <widget class="QLineEdit" name="age">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QLineEdit" name="height">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="4">
-                  <widget class="QLabel" name="label_11">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string>性别：</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="5">
-                  <widget class="QComboBox" name="sex">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <item>
-                    <property name="text">
-                     <string>男</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>女</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_5">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string>身高/cm：</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="3">
-                  <widget class="QLineEdit" name="weight">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="2">
-                  <widget class="QLabel" name="label_8">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string>体重/kg：</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="5">
-                  <widget class="QLineEdit" name="BMI">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="4">
-                  <widget class="QLabel" name="label_12">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string>BMI</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="label_6">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string>医疗类型：</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="2">
-                  <widget class="QLabel" name="label_9">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string>京医通卡号：</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QComboBox" name="mtype">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <item>
-                    <property name="text">
-                     <string>自费</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>公费</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>医保</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>其他</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="2" column="3" colspan="3">
-                  <widget class="QLineEdit" name="card">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
               <item row="0" column="1" colspan="2">
                <widget class="QGroupBox" name="groupBox_2">
                 <property name="font">
@@ -2015,6 +1771,250 @@ QPushButton:hover:pressed {border-image: url(:/button_background/images/button_a
                 </layout>
                </widget>
               </item>
+              <item row="0" column="0">
+               <widget class="QGroupBox" name="groupBox">
+                <property name="font">
+                 <font>
+                  <family>微软雅黑</family>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="title">
+                 <string>个人信息</string>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_2">
+                 <property name="leftMargin">
+                  <number>3</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>3</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="name">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="label_7">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>年龄：</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_4">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>姓名：</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="3">
+                  <widget class="QLineEdit" name="age">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QLineEdit" name="height">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="4">
+                  <widget class="QLabel" name="label_11">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>性别：</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="5">
+                  <widget class="QComboBox" name="sex">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>男</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>女</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_5">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>身高/cm：</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="3">
+                  <widget class="QLineEdit" name="weight">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2">
+                  <widget class="QLabel" name="label_8">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>体重/kg：</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="5">
+                  <widget class="QLineEdit" name="BMI">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="4">
+                  <widget class="QLabel" name="label_12">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>BMI</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="label_6">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>医疗类型：</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="2">
+                  <widget class="QLabel" name="label_9">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>京医通卡号：</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QComboBox" name="mtype">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>自费</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>公费</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>医保</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>其他</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="2" column="3" colspan="3">
+                  <widget class="QLineEdit" name="card">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
               <item row="1" column="2">
                <widget class="QGroupBox" name="groupBox_5">
                 <property name="sizePolicy">
@@ -2074,6 +2074,19 @@ QPushButton:hover:pressed {border-image: url(:/button_background/images/button_a
                    </property>
                   </widget>
                  </item>
+                 <item row="2" column="0">
+                  <widget class="QPushButton" name="query">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>查询</string>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </widget>
               </item>
@@ -2104,6 +2117,35 @@ QPushButton:hover:pressed {border-image: url(:/button_background/images/button_a
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="label_23">
+                   <property name="text">
+                    <string>结果：</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2">
+                  <widget class="QTextEdit" name="result">
+                   <property name="font">
+                    <font>
+                     <pointsize>11</pointsize>
+                    </font>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QListWidget" name="diagnosesList">
+                   <property name="font">
+                    <font>
+                     <family>微软雅黑</family>
+                     <pointsize>11</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="0" column="0" rowspan="2">
                   <widget class="QWidget" name="widget_3" native="true">
                    <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -2158,14 +2200,19 @@ QPushButton:hover:pressed {border-image: url(:/button_background/images/button_a
                         </widget>
                        </item>
                       </layout>
-                      <zorder>knee</zorder>
-                      <zorder>hip</zorder>
-                      <zorder>knee</zorder>
-                      <zorder>hip</zorder>
-                      <zorder>knee</zorder>
-                      <zorder>hip</zorder>
-                      <zorder>knee</zorder>
-                      <zorder>hip</zorder>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="mark">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="text">
+                       <string>评分</string>
+                      </property>
                      </widget>
                     </item>
                     <item>
@@ -2195,19 +2242,6 @@ QPushButton:hover:pressed {border-image: url(:/button_background/images/button_a
                      </widget>
                     </item>
                     <item>
-                     <widget class="QPushButton" name="mark">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>评分</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
                      <widget class="QPushButton" name="diagnoseGenerate">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -2226,66 +2260,73 @@ QPushButton:hover:pressed {border-image: url(:/button_background/images/button_a
                    </layout>
                    <zorder>diagnose</zorder>
                    <zorder>diagnoseAdd</zorder>
-                   <zorder>mark</zorder>
-                   <zorder>diagnoseGenerate</zorder>
-                   <zorder>diagnose</zorder>
-                   <zorder>diagnoseAdd</zorder>
-                   <zorder>mark</zorder>
-                   <zorder>diagnoseGenerate</zorder>
-                   <zorder>diagnose</zorder>
-                   <zorder>diagnoseAdd</zorder>
-                   <zorder>mark</zorder>
-                   <zorder>diagnoseGenerate</zorder>
-                   <zorder>diagnose</zorder>
-                   <zorder>diagnoseAdd</zorder>
-                   <zorder>mark</zorder>
                    <zorder>diagnoseGenerate</zorder>
                    <zorder>widget_4</zorder>
+                   <zorder>mark</zorder>
                   </widget>
                  </item>
                  <item row="0" column="1">
-                  <widget class="QLabel" name="label_22">
-                   <property name="text">
-                    <string>当前诊断：</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="2">
-                  <widget class="QLabel" name="label_23">
-                   <property name="text">
-                    <string>结果：</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QListWidget" name="diagnosesList">
-                   <property name="font">
-                    <font>
-                     <family>微软雅黑</family>
-                     <pointsize>11</pointsize>
-                    </font>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="2">
-                  <widget class="QTextEdit" name="result">
-                   <property name="font">
-                    <font>
-                     <pointsize>11</pointsize>
-                    </font>
-                   </property>
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
+                  <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="0,0,0">
+                   <item>
+                    <widget class="QLabel" name="label_24">
+                     <property name="text">
+                      <string>当前诊断：</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="label_22">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>50</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>50</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>评分：</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="score">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>50</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>50</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="readOnly">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </item>
                 </layout>
-                <zorder>label_23</zorder>
-                <zorder>result</zorder>
-                <zorder>diagnosesList</zorder>
-                <zorder>label_22</zorder>
-                <zorder>widget_3</zorder>
-                <zorder>widget_4</zorder>
                </widget>
               </item>
              </layout>

@@ -41,9 +41,16 @@ void AngleManager::clear(){
             showangleplot[i][j] = 0;
         }
         values[i].clear();
+        //默认稳定状态初始化为0
+        last_stable_angles[i] = 0;
+        //默认最大值初始化为-360
+        max_angles[i] = -360;
+        //默认最小值初始话为360
+        min_angles[i] = 360;
     }
+    limpDiff = 0;
+    limbDiff = 0;
     //check.clear();
-    last_stable_angle = 0;
     Time_cycle = 0;
     plot->replot();
 }
@@ -127,19 +134,15 @@ void AngleManager::setcheck(int i, int j, int k, bool flag){
 }
 
 void AngleManager::refresh_one_angle(int index, float value){
-    values[index].push_back(value);
-    if(values[index].size() > 15)
-        values[index].pop_front();
-    //判断是否处于稳态：最近的30个角度之间相差最多不超过10
+    //判断是否处于稳态：最近的15个角度之间相差最多不超过5
     //todo
     int max = *std::max_element(values[index].begin(), values[index].end()),
             min = *std::min_element(values[index].begin(), values[index].end());
     int cur_value = (max + min) / 2;
-    if(max - min < 5 &&  cur_value != last_stable_angle){
-        last_stable_angle = cur_value;
+    if(max - min < 5 &&  cur_value != last_stable_angles[index]){
+        last_stable_angles[index] = cur_value;
         emit s_stable_angle(nameset[index], cur_value);
     }
-
     if(Time_cycle == 0){
         for (int i = 0; i<29; i++)
         {
@@ -164,9 +167,83 @@ void AngleManager::refresh_one_angle(int index, float value){
 
 void AngleManager::r_angles(float *angles)
 {
-    for (int i=0;i<28;i++)
+    for (int index=0;index<28;index++)
     {
-//        if (angles[i]<-180 || angles[i] > 200) angles[i] = 0;
+        //记录15帧内的所有关节角度
+        values[index].push_back(angles[index]);
+        if(values[index].size() > 15)
+            values[index].pop_front();
+
+        //如果该帧和前一帧之间没有突变
+        if(values[index].size() > 1){
+            int det = abs(values[index][values[index].size() - 1] - values[index][values[index].size() - 2]);
+            if(det < 30){
+                max_angles[index] = std::max(max_angles[index], values[index].back());
+                min_angles[index] = std::min(min_angles[index], values[index].back());
+            }
+        }
     }
     refresh_angle(angles);
+}
+
+void AngleManager::r_joints(bodyangle joints){
+    //跛行计算
+    int diff = 0;
+    //髋关节高度
+    if (joints.tjoint_coordinate_3d.status[JointType_HipLeft] == TrackingState_Tracked &&
+            joints.tjoint_coordinate_3d.status[JointType_HipRight] == TrackingState_Tracked){
+        diff = abs(joints.tjoint_coordinate_3d.plot3d[JointType_HipLeft][1] - joints.tjoint_coordinate_3d.plot3d[JointType_HipRight][1]) * 100;
+        limpDiff = std::max(limpDiff, diff);
+    }
+    //膝关节高度，暂时不考虑，膝关节经常不稳定
+    //双下肢长度（髋关节->踝关节）
+    if(joints.tjoint_coordinate_3d.status[JointType_HipLeft] == TrackingState_Tracked &&
+            joints.tjoint_coordinate_3d.status[JointType_HipRight] == TrackingState_Tracked &&
+            joints.tjoint_coordinate_3d.status[JointType_KneeLeft] == TrackingState_Tracked &&
+            joints.tjoint_coordinate_3d.status[JointType_KneeRight] == TrackingState_Tracked &&
+            joints.tjoint_coordinate_3d.status[JointType_AnkleLeft] == TrackingState_Tracked &&
+            joints.tjoint_coordinate_3d.status[JointType_AnkleRight] == TrackingState_Tracked){
+        int d1x, d1y, d1z, d2x, d2y, d2z, len1, len2;
+        d1x = joints.tjoint_coordinate_3d.plot3d[JointType_HipLeft][0] - joints.tjoint_coordinate_3d.plot3d[JointType_KneeLeft][0];
+        d1y = joints.tjoint_coordinate_3d.plot3d[JointType_HipLeft][1] - joints.tjoint_coordinate_3d.plot3d[JointType_KneeLeft][1];
+        d1z = joints.tjoint_coordinate_3d.plot3d[JointType_HipLeft][2] - joints.tjoint_coordinate_3d.plot3d[JointType_KneeLeft][2];
+
+        d2x = joints.tjoint_coordinate_3d.plot3d[JointType_KneeLeft][0] - joints.tjoint_coordinate_3d.plot3d[JointType_AnkleLeft][0];
+        d2y = joints.tjoint_coordinate_3d.plot3d[JointType_KneeLeft][1] - joints.tjoint_coordinate_3d.plot3d[JointType_AnkleLeft][1];
+        d2z = joints.tjoint_coordinate_3d.plot3d[JointType_KneeLeft][2] - joints.tjoint_coordinate_3d.plot3d[JointType_AnkleLeft][2];
+
+        len1 = sqrt(d1x * d1x + d1y * d1y + d1z * d1z) + sqrt(d2x * d2x + d2y * d2y + d2z * d2z);
+
+        d1x = joints.tjoint_coordinate_3d.plot3d[JointType_HipRight][0] - joints.tjoint_coordinate_3d.plot3d[JointType_KneeRight][0];
+        d1y = joints.tjoint_coordinate_3d.plot3d[JointType_HipRight][1] - joints.tjoint_coordinate_3d.plot3d[JointType_KneeRight][1];
+        d1z = joints.tjoint_coordinate_3d.plot3d[JointType_HipRight][2] - joints.tjoint_coordinate_3d.plot3d[JointType_KneeRight][2];
+
+        d2x = joints.tjoint_coordinate_3d.plot3d[JointType_KneeRight][0] - joints.tjoint_coordinate_3d.plot3d[JointType_AnkleRight][0];
+        d2y = joints.tjoint_coordinate_3d.plot3d[JointType_KneeRight][1] - joints.tjoint_coordinate_3d.plot3d[JointType_AnkleRight][1];
+        d2z = joints.tjoint_coordinate_3d.plot3d[JointType_KneeRight][2] - joints.tjoint_coordinate_3d.plot3d[JointType_AnkleRight][2];
+
+        len2 = sqrt(d1x * d1x + d1y * d1y + d1z * d1z) + sqrt(d2x * d2x + d2y * d2y + d2z * d2z);
+        diff = abs(len1 - len2) * 100;
+        //limpDiff = std::max(limpDiff, diff);
+        limbDiff = std::max(limbDiff, diff);
+    }
+    //肩关节高度
+    if(joints.tjoint_coordinate_3d.status[JointType_ShoulderLeft] == TrackingState_Tracked &&
+            joints.tjoint_coordinate_3d.status[JointType_ShoulderRight] == TrackingState_Tracked){
+        diff = abs(joints.tjoint_coordinate_3d.plot3d[JointType_ShoulderLeft][1] - joints.tjoint_coordinate_3d.plot3d[JointType_ShoulderRight][1]) * 100;
+        limpDiff = std::max(limpDiff, diff);
+    }
+}
+
+int AngleManager::get_max_angles(int index) const {
+    return max_angles[index];
+}
+int AngleManager::get_min_angles(int index) const {
+    return min_angles[index];
+}
+int AngleManager::get_limpDiff() const{
+    return limpDiff;
+}
+int AngleManager::get_limbDiff() const{
+    return limbDiff;
 }
